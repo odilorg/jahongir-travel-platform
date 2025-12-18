@@ -1,0 +1,479 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// TOURS & CATEGORIES
+// ============================================================================
+
+model Tour {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  description     String?  @db.Text
+  shortDescription String? @db.Text
+  price           Decimal  @db.Decimal(10, 2)
+  duration        Int      // Duration in days
+  maxGroupSize    Int?
+  difficulty      String?  // Easy, Moderate, Challenging
+
+  // Relations
+  categoryId      String
+  category        TourCategory @relation(fields: [categoryId], references: [id])
+
+  // JSON arrays (or separate tables if preferred)
+  images          String[] // Array of image URLs
+  highlights      String[] // Tour highlights
+  included        String[] // What's included
+  excluded        String[] // What's not included
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+
+  // Pricing
+  showPrice       Boolean  @default(true)
+  discountedPrice Decimal? @db.Decimal(10, 2)
+
+  // Status
+  isActive        Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  publishedAt     DateTime?
+
+  // Relations
+  itineraryItems  ItineraryItem[]
+  reviews         Review[]
+  inquiries       TourInquiry[]
+  faqs            TourFaq[]
+  bookings        Booking[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@fulltext([title, description])
+}
+
+model TourCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  image       String?
+  icon        String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tours       Tour[]
+
+  @@index([slug])
+  @@index([order])
+}
+
+model ItineraryItem {
+  id          String   @id @default(cuid())
+  tourId      String
+  tour        Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  day         Int
+  title       String
+  description String   @db.Text
+  activities  String[] // Activities for the day
+  meals       String[] // Breakfast, Lunch, Dinner
+  accommodation String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cities      City[]   @relation("CityItineraryItem")
+
+  @@index([tourId])
+  @@index([day])
+}
+
+model TourFaq {
+  id          String   @id @default(cuid())
+  tourId      String
+  tour        Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  question    String
+  answer      String   @db.Text
+  order       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tourId])
+}
+
+// ============================================================================
+// CITIES & LOCATIONS
+// ============================================================================
+
+model City {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  country     String   @default("Uzbekistan")
+
+  // Geography
+  latitude    Decimal? @db.Decimal(10, 8)
+  longitude   Decimal? @db.Decimal(11, 8)
+
+  // Media
+  image       String?
+  images      String[]
+
+  // SEO
+  metaTitle   String?
+  metaDescription String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  itineraryItems ItineraryItem[] @relation("CityItineraryItem")
+  blogPosts   BlogPost[]
+
+  @@index([slug])
+}
+
+// ============================================================================
+// BOOKINGS & INQUIRIES
+// ============================================================================
+
+model Booking {
+  id              String   @id @default(cuid())
+  tourId          String
+  tour            Tour     @relation(fields: [tourId], references: [id])
+
+  // Customer info
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+
+  // Booking details
+  travelDate      DateTime
+  numberOfPeople  Int
+  totalPrice      Decimal  @db.Decimal(10, 2)
+
+  // Status
+  status          String   @default("pending") // pending, confirmed, cancelled
+  paymentStatus   String   @default("unpaid") // unpaid, partial, paid
+
+  // Additional info
+  specialRequests String?  @db.Text
+  notes           String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tourId])
+  @@index([customerEmail])
+  @@index([status])
+}
+
+model TourInquiry {
+  id              String   @id @default(cuid())
+  tourId          String?
+
+  // Contact info
+  name            String
+  email           String
+  phone           String?
+
+  // Inquiry details
+  message         String   @db.Text
+  travelDate      DateTime?
+  numberOfPeople  Int?
+  budget          Decimal? @db.Decimal(10, 2)
+
+  // Status
+  status          String   @default("new") // new, contacted, converted, closed
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String   @db.Text
+
+  status    String   @default("new") // new, responded, closed
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+}
+
+// ============================================================================
+// REVIEWS
+// ============================================================================
+
+model Review {
+  id          String   @id @default(cuid())
+  tourId      String
+  tour        Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  // Reviewer info
+  name        String
+  email       String
+  country     String?
+
+  // Review content
+  rating      Int      // 1-5
+  title       String?
+  comment     String   @db.Text
+
+  // Media
+  images      String[]
+
+  // Moderation
+  isApproved  Boolean  @default(false)
+  isSpam      Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tourId])
+  @@index([isApproved])
+  @@index([rating])
+}
+
+// ============================================================================
+// BLOG
+// ============================================================================
+
+model BlogPost {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  excerpt         String?  @db.Text
+  content         String   @db.Text
+
+  // Media
+  featuredImage   String?
+  images          String[]
+
+  // Relations
+  categoryId      String?
+  category        BlogCategory? @relation(fields: [categoryId], references: [id])
+
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id])
+
+  cityId          String?
+  city            City?    @relation(fields: [cityId], references: [id])
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+
+  // Status
+  status          String   @default("draft") // draft, published
+
+  // Stats
+  viewCount       Int      @default(0)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  publishedAt     DateTime?
+
+  comments        BlogComment[]
+  tags            BlogTag[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([status])
+  @@index([publishedAt])
+  @@fulltext([title, content])
+}
+
+model BlogCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  image       String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  posts       BlogPost[]
+
+  @@index([slug])
+}
+
+model BlogTag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts     BlogPost[]
+
+  @@index([slug])
+}
+
+model BlogComment {
+  id          String   @id @default(cuid())
+  postId      String
+  post        BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Commenter info
+  name        String
+  email       String
+  website     String?
+
+  // Comment content
+  content     String   @db.Text
+
+  // Moderation
+  isApproved  Boolean  @default(false)
+  isSpam      Boolean  @default(false)
+
+  // Parent comment (for replies)
+  parentId    String?
+  parent      BlogComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies     BlogComment[] @relation("CommentReplies")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([postId])
+  @@index([isApproved])
+}
+
+// ============================================================================
+// LEADS & CRM
+// ============================================================================
+
+model Lead {
+  id          String   @id @default(cuid())
+
+  // Contact info
+  name        String
+  email       String
+  phone       String?
+  company     String?
+
+  // Lead details
+  source      String?  // website, referral, social, etc.
+  status      String   @default("new") // new, contacted, qualified, converted, lost
+  priority    String   @default("medium") // low, medium, high
+
+  // Notes
+  notes       String?  @db.Text
+
+  // Conversion
+  convertedToBookingId String?
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastContactedAt DateTime?
+
+  @@index([email])
+  @@index([status])
+  @@index([priority])
+}
+
+// ============================================================================
+// USERS & AUTH
+// ============================================================================
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  password    String   // Hashed
+
+  role        String   @default("user") // user, admin, super_admin
+
+  // Profile
+  avatar      String?
+  bio         String?  @db.Text
+
+  // Status
+  isActive    Boolean  @default(true)
+  emailVerified Boolean @default(false)
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastLoginAt DateTime?
+
+  blogPosts   BlogPost[]
+
+  @@index([email])
+  @@index([role])
+}
+
+// ============================================================================
+// SETTINGS
+// ============================================================================
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  type      String   @default("string") // string, number, boolean, json
+  group     String   @default("general")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@index([group])
+}
+
+// ============================================================================
+// REDIRECTS (SEO)
+// ============================================================================
+
+model Redirect {
+  id          String   @id @default(cuid())
+  fromPath    String   @unique
+  toPath      String
+  statusCode  Int      @default(301) // 301 or 302
+
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([fromPath])
+}
