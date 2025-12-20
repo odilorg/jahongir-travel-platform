@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { MapPin, Phone, Mail, Clock, Send, MessageCircle, Star, ChevronDown } from "lucide-react"
+import { MapPin, Phone, Mail, Clock, Send, MessageCircle, Star, ChevronDown, User, AtSign } from "lucide-react"
 import { submitContact, type ContactFormData } from "@/lib/api"
 import Link from "next/link"
 
@@ -103,28 +103,34 @@ export default function ContactPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Your Name <span className="text-red-500">*</span>
                     </label>
-                    <Input
-                      name="name"
-                      required
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="John Doe"
-                      className="h-12"
-                    />
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Input
+                        name="name"
+                        required
+                        value={formData.name}
+                        onChange={handleChange}
+                        placeholder="John Doe"
+                        className="h-12 pl-10"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Email Address <span className="text-red-500">*</span>
                     </label>
-                    <Input
-                      name="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="john@example.com"
-                      className="h-12"
-                    />
+                    <div className="relative">
+                      <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Input
+                        name="email"
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="john@example.com"
+                        className="h-12 pl-10"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -133,14 +139,17 @@ export default function ContactPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Phone Number
                     </label>
-                    <Input
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="+998 90 123 45 67"
-                      className="h-12"
-                    />
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Input
+                        name="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="+998 90 123 45 67"
+                        className="h-12 pl-10"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -219,8 +228,8 @@ export default function ContactPage() {
 
                   <div className="space-y-5">
                     <div className="flex items-start gap-4">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <Phone className="h-5 w-5 text-blue-600" />
+                      <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                        <Phone className="h-5 w-5 text-brand-orange" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">Call Us</p>
@@ -243,8 +252,8 @@ export default function ContactPage() {
                     </div>
 
                     <div className="flex items-start gap-4">
-                      <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                        <Mail className="h-5 w-5 text-amber-600" />
+                      <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                        <Mail className="h-5 w-5 text-brand-orange" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">Email</p>
@@ -255,8 +264,8 @@ export default function ContactPage() {
                     </div>
 
                     <div className="flex items-start gap-4">
-                      <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                        <Clock className="h-5 w-5 text-purple-600" />
+                      <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                        <Clock className="h-5 w-5 text-brand-orange" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">Opening Hours</p>
@@ -272,8 +281,8 @@ export default function ContactPage() {
                     </div>
 
                     <div className="flex items-start gap-4">
-                      <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="h-5 w-5 text-red-600" />
+                      <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="h-5 w-5 text-brand-orange" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">Head Office</p>
@@ -300,7 +309,7 @@ export default function ContactPage() {
               </Card>
 
               {/* Need Immediate Help */}
-              <Card className="bg-amber-50 border-amber-100">
+              <Card className="bg-orange-50 border-2 border-brand-orange">
                 <CardContent className="p-6">
                   <h3 className="font-bold text-lg mb-2">Need immediate help?</h3>
                   <p className="text-gray-600 text-sm mb-4">
@@ -309,13 +318,13 @@ export default function ContactPage() {
                   <div className="flex gap-3">
                     <a
                       href="tel:+998901234567"
-                      className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-center text-sm font-medium hover:bg-blue-700"
+                      className="flex-1 bg-brand-orange text-white py-2 px-4 rounded-lg text-center text-sm font-medium hover:bg-brand-orange/90"
                     >
                       Call Now
                     </a>
                     <a
                       href="https://wa.me/998901234567"
-                      className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-center text-sm font-medium hover:bg-green-700"
+                      className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg text-center text-sm font-medium hover:bg-green-600"
                     >
                       WhatsApp
                     </a>
