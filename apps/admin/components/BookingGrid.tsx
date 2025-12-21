@@ -1,9 +1,30 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import {
+  DndContext,
+  DragOverlay,
+  useDraggable,
+  useDroppable,
+  DragStartEvent,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   ChevronLeft,
   ChevronRight,
@@ -27,6 +48,7 @@ interface Booking {
     id: string;
     title: string;
     slug: string;
+    duration?: number; // Tour duration in days
   };
   customerName: string;
   customerEmail: string;
@@ -54,6 +76,149 @@ interface BookingGridProps {
 
 const DAYS_TO_SHOW = 14; // Show 2 weeks
 
+// Draggable booking card component
+interface DraggableBookingProps {
+  booking: Booking;
+  bookingIndex: number;
+  bookingHeight: number;
+  visibleSpan: number;
+  spanWidth: string;
+  statusColor: string;
+  onBookingClick: (booking: Booking) => void;
+  formatPrice: (price: number) => string;
+}
+
+function DraggableBookingCard({
+  booking,
+  bookingIndex,
+  bookingHeight,
+  visibleSpan,
+  spanWidth,
+  statusColor,
+  onBookingClick,
+  formatPrice,
+}: DraggableBookingProps) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: booking.id,
+    data: { booking },
+  });
+
+  const duration = booking.tour.duration || 1;
+  const topOffset = bookingIndex * (bookingHeight + 4);
+
+  const style = {
+    top: `${topOffset}px`,
+    width: visibleSpan > 1 ? spanWidth : 'calc(100% - 2px)',
+    zIndex: isDragging ? 100 : visibleSpan > 1 ? 10 : 1,
+    minWidth: visibleSpan > 1 ? `${visibleSpan * 78}px` : undefined,
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  // Handle click - only trigger if not dragging
+  const handleClick = () => {
+    if (!isDragging) {
+      onBookingClick(booking);
+    }
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        'text-xs p-1.5 rounded border cursor-grab transition-colors absolute left-0 right-0 select-none',
+        statusColor,
+        visibleSpan > 1 && 'shadow-sm',
+        isDragging && 'cursor-grabbing shadow-lg ring-2 ring-blue-400'
+      )}
+      style={style}
+      onClick={handleClick}
+      title={`${booking.customerName} - ${booking.numberOfPeople} people - ${formatPrice(booking.totalPrice)}${duration > 1 ? ` (${duration} days)` : ''} • Drag to reschedule`}
+    >
+      <div className="font-medium truncate">
+        {booking.customerName.split(' ')[0]}
+      </div>
+      <div className="flex items-center gap-1 opacity-75">
+        <Users className="h-2.5 w-2.5" />
+        <span>{booking.numberOfPeople}</span>
+        {duration > 1 && (
+          <span className="ml-1 text-[10px] opacity-75">
+            ({duration}d)
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Droppable cell component
+interface DroppableCellProps {
+  dateKey: string;
+  tourId: string;
+  isToday: boolean;
+  isWeekend: boolean;
+  children: React.ReactNode;
+}
+
+function DroppableCell({ dateKey, tourId, isToday, isWeekend, children }: DroppableCellProps) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `${tourId}-${dateKey}`,
+    data: { dateKey, tourId },
+  });
+
+  return (
+    <td
+      ref={setNodeRef}
+      className={cn(
+        'border-b border-r border-gray-200 p-1 align-top relative transition-colors',
+        isToday && 'bg-blue-50/50',
+        isWeekend && !isToday && 'bg-gray-50/50',
+        isOver && 'bg-blue-100 ring-2 ring-blue-400 ring-inset'
+      )}
+    >
+      <div className="relative h-full">
+        {children}
+      </div>
+    </td>
+  );
+}
+
+// Drag overlay component (what you see while dragging)
+interface DragOverlayBookingProps {
+  booking: Booking;
+  statusColor: string;
+}
+
+function DragOverlayBooking({ booking, statusColor }: DragOverlayBookingProps) {
+  const duration = booking.tour.duration || 1;
+
+  return (
+    <div
+      className={cn(
+        'text-xs p-1.5 rounded border shadow-xl cursor-grabbing ring-2 ring-blue-400',
+        statusColor,
+        'transform scale-105'
+      )}
+      style={{ width: '120px' }}
+    >
+      <div className="font-medium truncate">
+        {booking.customerName.split(' ')[0]}
+      </div>
+      <div className="flex items-center gap-1 opacity-75">
+        <Users className="h-2.5 w-2.5" />
+        <span>{booking.numberOfPeople}</span>
+        {duration > 1 && (
+          <span className="ml-1 text-[10px] opacity-75">
+            ({duration}d)
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdatePayment, onUpdateBooking }: BookingGridProps) {
   const [startDate, setStartDate] = useState(() => {
     const today = new Date();
@@ -64,6 +229,74 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
   const [actionLoading, setActionLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<BookingUpdateData>({});
+
+  // Drag and drop state
+  const [activeBooking, setActiveBooking] = useState<Booking | null>(null);
+  const [pendingDrop, setPendingDrop] = useState<{
+    booking: Booking;
+    newDate: string;
+    oldDate: string;
+  } | null>(null);
+
+  // Configure drag sensors (require slight movement before drag starts to allow clicks)
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required before drag starts
+      },
+    })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const booking = event.active.data.current?.booking as Booking;
+    if (booking) {
+      setActiveBooking(booking);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveBooking(null);
+
+    if (!over) return;
+
+    const booking = active.data.current?.booking as Booking;
+    const dropData = over.data.current as { dateKey: string; tourId: string } | undefined;
+
+    if (!booking || !dropData) return;
+
+    const oldDate = new Date(booking.travelDate).toISOString().split('T')[0];
+    const newDate = dropData.dateKey;
+
+    // Only show confirmation if date actually changed
+    if (oldDate !== newDate) {
+      setPendingDrop({
+        booking,
+        newDate,
+        oldDate,
+      });
+    }
+  };
+
+  const handleConfirmDrop = async () => {
+    if (!pendingDrop || !onUpdateBooking) return;
+
+    setActionLoading(true);
+    try {
+      await onUpdateBooking(pendingDrop.booking.id, {
+        travelDate: pendingDrop.newDate,
+      });
+      setPendingDrop(null);
+    } catch (error) {
+      console.error('Failed to update booking date:', error);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancelDrop = () => {
+    setPendingDrop(null);
+  };
 
   const handleStatusUpdate = async (status: string) => {
     if (!selectedBooking || !onUpdateStatus) return;
@@ -143,14 +376,87 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
     return dates;
   }, [startDate]);
 
-  // Group bookings by tour and date
+  // Calculate row assignments for overlapping multi-day bookings
+  // Returns a map of bookingId -> rowIndex for each tour
+  const bookingRowAssignments = useMemo(() => {
+    const assignments: Record<string, Record<string, number>> = {}; // tourId -> { bookingId -> rowIndex }
+    const tourMaxRows: Record<string, number> = {}; // tourId -> maxRows
+
+    tours.forEach((tour) => {
+      assignments[tour.id] = {};
+      tourMaxRows[tour.id] = 0;
+
+      // Get all bookings for this tour, sorted by start date
+      const tourBookings = bookings
+        .filter((b) => b.tour.id === tour.id)
+        .sort((a, b) => new Date(a.travelDate).getTime() - new Date(b.travelDate).getTime());
+
+      // Track which rows are occupied on which dates
+      // dateKey -> Set of occupied row indices
+      const occupiedRows: Record<string, Set<number>> = {};
+
+      tourBookings.forEach((booking) => {
+        const duration = booking.tour.duration || 1;
+        const startDate = new Date(booking.travelDate);
+
+        // Find the first row that's free for ALL days of this booking
+        let assignedRow = 0;
+        let foundFreeRow = false;
+
+        while (!foundFreeRow) {
+          let rowIsFree = true;
+
+          // Check if this row is free for all days of the booking
+          for (let i = 0; i < duration; i++) {
+            const checkDate = new Date(startDate);
+            checkDate.setDate(checkDate.getDate() + i);
+            const dateKey = checkDate.toISOString().split('T')[0];
+
+            if (occupiedRows[dateKey]?.has(assignedRow)) {
+              rowIsFree = false;
+              break;
+            }
+          }
+
+          if (rowIsFree) {
+            foundFreeRow = true;
+          } else {
+            assignedRow++;
+          }
+        }
+
+        // Assign this row to the booking
+        assignments[tour.id][booking.id] = assignedRow;
+
+        // Mark all days as occupied for this row
+        for (let i = 0; i < duration; i++) {
+          const occupyDate = new Date(startDate);
+          occupyDate.setDate(occupyDate.getDate() + i);
+          const dateKey = occupyDate.toISOString().split('T')[0];
+
+          if (!occupiedRows[dateKey]) {
+            occupiedRows[dateKey] = new Set();
+          }
+          occupiedRows[dateKey].add(assignedRow);
+        }
+
+        // Track max rows for this tour
+        tourMaxRows[tour.id] = Math.max(tourMaxRows[tour.id], assignedRow + 1);
+      });
+    });
+
+    return { assignments, tourMaxRows };
+  }, [bookings, tours]);
+
+  // Group bookings by tour and date, with span info for multi-day bookings
   const bookingMatrix = useMemo(() => {
-    const matrix: Record<string, Record<string, Booking[]>> = {};
+    const matrix: Record<string, Record<string, { bookings: Booking[]; isSpanned?: boolean }>> = {};
 
     tours.forEach((tour) => {
       matrix[tour.id] = {};
     });
 
+    // First pass: add all bookings to their start date
     bookings.forEach((booking) => {
       const tourId = booking.tour.id;
       const dateKey = new Date(booking.travelDate).toISOString().split('T')[0];
@@ -159,13 +465,49 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
         matrix[tourId] = {};
       }
       if (!matrix[tourId][dateKey]) {
-        matrix[tourId][dateKey] = [];
+        matrix[tourId][dateKey] = { bookings: [] };
       }
-      matrix[tourId][dateKey].push(booking);
+      matrix[tourId][dateKey].bookings.push(booking);
+
+      // Mark subsequent days as spanned (for multi-day tours)
+      const duration = booking.tour.duration || 1;
+      if (duration > 1) {
+        for (let i = 1; i < duration; i++) {
+          const spannedDate = new Date(booking.travelDate);
+          spannedDate.setDate(spannedDate.getDate() + i);
+          const spannedKey = spannedDate.toISOString().split('T')[0];
+          if (!matrix[tourId][spannedKey]) {
+            matrix[tourId][spannedKey] = { bookings: [], isSpanned: true };
+          } else {
+            matrix[tourId][spannedKey].isSpanned = true;
+          }
+        }
+      }
     });
 
     return matrix;
   }, [bookings, tours]);
+
+  // Helper to calculate how many days a booking can span within the visible range
+  const getVisibleSpan = (booking: Booking, startDateKey: string) => {
+    const duration = booking.tour.duration || 1;
+    if (duration <= 1) return 1;
+
+    const bookingStart = new Date(booking.travelDate);
+    const rangeEnd = new Date(startDate);
+    rangeEnd.setDate(rangeEnd.getDate() + DAYS_TO_SHOW);
+
+    // Calculate how many days fit within the visible range
+    let visibleDays = 0;
+    for (let i = 0; i < duration; i++) {
+      const day = new Date(bookingStart);
+      day.setDate(day.getDate() + i);
+      if (day >= startDate && day < rangeEnd) {
+        visibleDays++;
+      }
+    }
+    return Math.max(1, visibleDays);
+  };
 
   const goToPreviousWeek = () => {
     const newDate = new Date(startDate);
@@ -250,8 +592,8 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
     let totalBookings = 0;
     let totalPeople = 0;
 
-    Object.values(bookingMatrix[tourId] || {}).forEach((dayBookings) => {
-      dayBookings.forEach((booking) => {
+    Object.values(bookingMatrix[tourId] || {}).forEach((cell) => {
+      cell.bookings.forEach((booking) => {
         if (booking.status !== 'cancelled') {
           totalBookings++;
           totalPeople += booking.numberOfPeople;
@@ -260,6 +602,37 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
     });
 
     return { totalBookings, totalPeople };
+  };
+
+  // Get the number of visual rows needed for a tour (based on overlapping bookings)
+  const getRowsForTour = (tourId: string) => {
+    return bookingRowAssignments.tourMaxRows[tourId] || 1;
+  };
+
+  // Get the assigned row for a specific booking
+  const getBookingRow = (tourId: string, bookingId: string) => {
+    return bookingRowAssignments.assignments[tourId]?.[bookingId] || 0;
+  };
+
+  // Track which cells should be skipped due to colSpan
+  const getCellsToSkip = (tourId: string) => {
+    const skippedCells = new Set<string>();
+
+    Object.entries(bookingMatrix[tourId] || {}).forEach(([dateKey, cell]) => {
+      cell.bookings.forEach((booking) => {
+        const duration = booking.tour.duration || 1;
+        if (duration > 1) {
+          for (let i = 1; i < duration; i++) {
+            const skipDate = new Date(booking.travelDate);
+            skipDate.setDate(skipDate.getDate() + i);
+            const skipKey = skipDate.toISOString().split('T')[0];
+            skippedCells.add(skipKey);
+          }
+        }
+      });
+    });
+
+    return skippedCells;
   };
 
   return (
@@ -300,109 +673,130 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
           </div>
         </div>
 
-        {/* Grid */}
-        <div className="overflow-x-auto border border-gray-200 rounded-lg">
-          <table className="w-full border-collapse min-w-[800px]">
-            <thead>
-              <tr>
-                {/* Tour name column header */}
-                <th className="sticky left-0 z-10 bg-gray-50 border-b border-r p-2 text-left min-w-[200px]">
-                  <span className="font-semibold text-gray-700">Tour</span>
-                </th>
-                {/* Date headers */}
-                {dateRange.map((date) => {
-                  const { day, weekday } = formatDateHeader(date);
-                  return (
-                    <th
-                      key={date.toISOString()}
-                      className={cn(
-                        'border-b border-r border-gray-200 p-2 text-center min-w-[80px]',
-                        isToday(date) && 'bg-blue-50',
-                        isWeekend(date) && !isToday(date) && 'bg-gray-50'
-                      )}
-                    >
-                      <div className="text-xs text-gray-500">{weekday}</div>
-                      <div
+        {/* Grid with Drag and Drop */}
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="overflow-x-auto border border-gray-200 rounded-lg">
+            <table className="w-full border-collapse min-w-[800px]">
+              <thead>
+                <tr>
+                  {/* Tour name column header */}
+                  <th className="sticky left-0 z-10 bg-gray-50 border-b border-r p-2 text-left min-w-[200px]">
+                    <span className="font-semibold text-gray-700">Tour</span>
+                  </th>
+                  {/* Date headers */}
+                  {dateRange.map((date) => {
+                    const { day, weekday } = formatDateHeader(date);
+                    return (
+                      <th
+                        key={date.toISOString()}
                         className={cn(
-                          'text-sm font-semibold',
-                          isToday(date) ? 'text-blue-600' : 'text-gray-700'
+                          'border-b border-r border-gray-200 p-2 text-center min-w-[80px]',
+                          isToday(date) && 'bg-blue-50',
+                          isWeekend(date) && !isToday(date) && 'bg-gray-50'
                         )}
                       >
-                        {day}
-                      </div>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {tours.length === 0 ? (
-                <tr>
-                  <td colSpan={DAYS_TO_SHOW + 1} className="p-8 text-center text-gray-500">
-                    No tours with bookings found
-                  </td>
-                </tr>
-              ) : (
-                tours.map((tour) => {
-                  const stats = getTourStats(tour.id);
-                  return (
-                    <tr key={tour.id} className="hover:bg-gray-50/50">
-                      {/* Tour name cell */}
-                      <td className="sticky left-0 z-10 bg-white border-b border-r p-2">
-                        <div className="font-medium text-gray-900 truncate max-w-[180px]" title={tour.title}>
-                          {tour.title}
+                        <div className="text-xs text-gray-500">{weekday}</div>
+                        <div
+                          className={cn(
+                            'text-sm font-semibold',
+                            isToday(date) ? 'text-blue-600' : 'text-gray-700'
+                          )}
+                        >
+                          {day}
                         </div>
-                        {stats.totalBookings > 0 && (
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            {stats.totalBookings} bookings · {stats.totalPeople} pax
-                          </div>
-                        )}
-                      </td>
-                      {/* Booking cells */}
-                      {dateRange.map((date) => {
-                        const dateKey = date.toISOString().split('T')[0];
-                        const dayBookings = bookingMatrix[tour.id]?.[dateKey] || [];
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {tours.length === 0 ? (
+                  <tr>
+                    <td colSpan={DAYS_TO_SHOW + 1} className="p-8 text-center text-gray-500">
+                      No tours with bookings found
+                    </td>
+                  </tr>
+                ) : (
+                  tours.map((tour) => {
+                    const stats = getTourStats(tour.id);
+                    const skippedCells = getCellsToSkip(tour.id);
+                    const visualRows = getRowsForTour(tour.id);
+                    const bookingHeight = 44; // Height of each booking card in pixels
+                    const rowHeight = Math.max(60, visualRows * (bookingHeight + 4));
 
-                        return (
-                          <td
-                            key={date.toISOString()}
-                            className={cn(
-                              'border-b border-r border-gray-200 p-1 align-top min-h-[60px]',
-                              isToday(date) && 'bg-blue-50/50',
-                              isWeekend(date) && !isToday(date) && 'bg-gray-50/50'
-                            )}
-                          >
-                            <div className="space-y-1">
-                              {dayBookings.map((booking) => (
-                                <div
-                                  key={booking.id}
-                                  className={cn(
-                                    'text-xs p-1.5 rounded border cursor-pointer transition-colors',
-                                    getStatusColor(booking.status)
-                                  )}
-                                  onClick={() => handleBookingClick(booking)}
-                                  title={`${booking.customerName} - ${booking.numberOfPeople} people - ${formatPrice(booking.totalPrice)}`}
-                                >
-                                  <div className="font-medium truncate">
-                                    {booking.customerName.split(' ')[0]}
-                                  </div>
-                                  <div className="flex items-center gap-0.5 opacity-75">
-                                    <Users className="h-2.5 w-2.5" />
-                                    <span>{booking.numberOfPeople}</span>
-                                  </div>
-                                </div>
-                              ))}
+                    return (
+                      <tr key={tour.id} className="hover:bg-gray-50/50" style={{ height: `${rowHeight}px` }}>
+                        {/* Tour name cell */}
+                        <td className="sticky left-0 z-10 bg-white border-b border-r p-2">
+                          <div className="font-medium text-gray-900 truncate max-w-[180px]" title={tour.title}>
+                            {tour.title}
+                          </div>
+                          {stats.totalBookings > 0 && (
+                            <div className="text-xs text-gray-500 mt-0.5">
+                              {stats.totalBookings} bookings · {stats.totalPeople} pax
                             </div>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                          )}
+                        </td>
+                        {/* Booking cells - droppable */}
+                        {dateRange.map((date) => {
+                          const dateKey = date.toISOString().split('T')[0];
+                          const cell = bookingMatrix[tour.id]?.[dateKey];
+                          const dayBookings = cell?.bookings || [];
+
+                          return (
+                            <DroppableCell
+                              key={date.toISOString()}
+                              dateKey={dateKey}
+                              tourId={tour.id}
+                              isToday={isToday(date)}
+                              isWeekend={isWeekend(date)}
+                            >
+                              {dayBookings.map((booking) => {
+                                const visibleSpan = getVisibleSpan(booking, dateKey);
+                                const spanWidth = visibleSpan > 1
+                                  ? `calc(${visibleSpan * 80}px + ${(visibleSpan - 1) * 8}px)`
+                                  : 'calc(100% - 2px)';
+                                const assignedRow = getBookingRow(tour.id, booking.id);
+
+                                return (
+                                  <DraggableBookingCard
+                                    key={booking.id}
+                                    booking={booking}
+                                    bookingIndex={assignedRow}
+                                    bookingHeight={bookingHeight}
+                                    visibleSpan={visibleSpan}
+                                    spanWidth={spanWidth}
+                                    statusColor={getStatusColor(booking.status)}
+                                    onBookingClick={handleBookingClick}
+                                    formatPrice={formatPrice}
+                                  />
+                                );
+                              })}
+                            </DroppableCell>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Drag Overlay - what you see while dragging */}
+          <DragOverlay>
+            {activeBooking && (
+              <DragOverlayBooking
+                booking={activeBooking}
+                statusColor={getStatusColor(activeBooking.status)}
+              />
+            )}
+          </DragOverlay>
+        </DndContext>
 
         {/* Empty state if no tours */}
         {tours.length === 0 && bookings.length === 0 && (
@@ -614,6 +1008,48 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
             </Card>
           </div>
         )}
+
+        {/* Drag and Drop Confirmation Dialog */}
+        <AlertDialog open={!!pendingDrop} onOpenChange={(open) => !open && handleCancelDrop()}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reschedule Booking?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {pendingDrop && (
+                  <>
+                    Move <strong>{pendingDrop.booking.customerName}</strong>'s booking from{' '}
+                    <strong>
+                      {new Date(pendingDrop.oldDate).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </strong>{' '}
+                    to{' '}
+                    <strong>
+                      {new Date(pendingDrop.newDate).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </strong>
+                    ?
+                  </>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmDrop}
+                disabled={actionLoading}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {actionLoading ? 'Moving...' : 'Confirm Move'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );

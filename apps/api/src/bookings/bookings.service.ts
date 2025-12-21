@@ -198,6 +198,7 @@ export class BookingsService {
               id: true,
               title: true,
               slug: true,
+              duration: true,
             },
           },
           guest: {
@@ -564,6 +565,7 @@ export class BookingsService {
             id: true,
             title: true,
             slug: true,
+            duration: true,
           },
         },
         guest: {

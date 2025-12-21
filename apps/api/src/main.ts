@@ -20,6 +20,8 @@ async function bootstrap() {
       'http://localhost:3000', // Web app
       'http://localhost:3001', // Admin app
       'http://localhost:3002', // Web app (alternate port)
+      'http://localhost:3003', // Web app (alternate port)
+      'http://localhost:3004', // Admin app (alternate port)
       process.env.WEB_URL,
       process.env.ADMIN_URL,
     ].filter((url): url is string => typeof url === 'string'),

@@ -15,8 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { MultiSelect, type MultiSelectOption } from '@/components/ui/multi-select';
 import { ArrowLeft, Loader2, Calendar, User, Phone, Mail, Users, MapPin, Car } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -103,21 +103,18 @@ export default function NewBookingPage() {
     setSelectedTour(tour || null);
   };
 
-  const toggleGuide = (guideId: string) => {
-    setSelectedGuides((prev) =>
-      prev.includes(guideId)
-        ? prev.filter((id) => id !== guideId)
-        : [...prev, guideId]
-    );
-  };
+  // Convert guides and drivers to MultiSelect options
+  const guideOptions: MultiSelectOption[] = guides.map((guide) => ({
+    value: guide.id,
+    label: guide.name,
+    description: guide.languages.map(l => l.toUpperCase()).join(', '),
+  }));
 
-  const toggleDriver = (driverId: string) => {
-    setSelectedDrivers((prev) =>
-      prev.includes(driverId)
-        ? prev.filter((id) => id !== driverId)
-        : [...prev, driverId]
-    );
-  };
+  const driverOptions: MultiSelectOption[] = drivers.map((driver) => ({
+    value: driver.id,
+    label: driver.name,
+    description: driver.vehicleInfo,
+  }));
 
   const calculateTotalPrice = () => {
     if (!selectedTour) return 0;
@@ -354,34 +351,14 @@ export default function NewBookingPage() {
                       </Link>
                     </p>
                   ) : (
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {guides.map((guide) => (
-                        <div
-                          key={guide.id}
-                          className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                            selectedGuides.includes(guide.id)
-                              ? 'border-primary bg-primary/5'
-                              : 'hover:bg-muted/50'
-                          }`}
-                          onClick={() => toggleGuide(guide.id)}
-                        >
-                          <Checkbox
-                            checked={selectedGuides.includes(guide.id)}
-                            onCheckedChange={() => toggleGuide(guide.id)}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{guide.name}</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {guide.languages.map((lang) => (
-                                <Badge key={lang} variant="secondary" className="text-xs">
-                                  {lang.toUpperCase()}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <MultiSelect
+                      options={guideOptions}
+                      selected={selectedGuides}
+                      onChange={setSelectedGuides}
+                      placeholder="Select guides..."
+                      searchPlaceholder="Search guides by name..."
+                      emptyMessage="No guides found."
+                    />
                   )}
                 </div>
 
@@ -399,32 +376,14 @@ export default function NewBookingPage() {
                       </Link>
                     </p>
                   ) : (
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {drivers.map((driver) => (
-                        <div
-                          key={driver.id}
-                          className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                            selectedDrivers.includes(driver.id)
-                              ? 'border-primary bg-primary/5'
-                              : 'hover:bg-muted/50'
-                          }`}
-                          onClick={() => toggleDriver(driver.id)}
-                        >
-                          <Checkbox
-                            checked={selectedDrivers.includes(driver.id)}
-                            onCheckedChange={() => toggleDriver(driver.id)}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{driver.name}</p>
-                            {driver.vehicleInfo && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                {driver.vehicleInfo}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <MultiSelect
+                      options={driverOptions}
+                      selected={selectedDrivers}
+                      onChange={setSelectedDrivers}
+                      placeholder="Select drivers..."
+                      searchPlaceholder="Search drivers by name..."
+                      emptyMessage="No drivers found."
+                    />
                   )}
                 </div>
               </CardContent>

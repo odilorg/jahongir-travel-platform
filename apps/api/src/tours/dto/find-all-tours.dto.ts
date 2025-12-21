@@ -54,4 +54,8 @@ export class FindAllToursDto {
   @IsOptional()
   @IsString()
   featured?: string; // 'true' or 'false'
+
+  @IsOptional()
+  @IsString()
+  isActive?: string; // 'true' or 'false'
 }
