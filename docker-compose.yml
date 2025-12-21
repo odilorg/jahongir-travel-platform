@@ -8,14 +8,14 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: postgres123
       POSTGRES_DB: jahongir_travel_dev
     ports:
-      - "5432:5432"
+      - '5433:5432'  # Using 5433 to avoid conflicts with other projects
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,30 +26,29 @@ services:
     container_name: jahongir-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - '6380:6379'  # Using 6380 to avoid conflicts with other projects
     volumes:
-      - redis_data:/data
+      - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
-      timeout: 5s
+      timeout: 3s
       retries: 5
 
-  # MailHog (Email testing in development)
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: jahongir-mailhog
+  # MailDev (Email Testing)
+  maildev:
+    image: maildev/maildev:latest
+    container_name: jahongir-maildev
     restart: unless-stopped
     ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
-    logging:
-      driver: "none"
+      - '1026:1025'   # SMTP port (using 1026 to avoid conflicts)
+      - '8026:1080'   # Web UI port (using 8026 to avoid conflicts)
+    environment:
+      - MAILDEV_SMTP_PORT=1025
+      - MAILDEV_WEB_PORT=1080
 
 volumes:
-  postgres_data:
-  redis_data:
-
-networks:
-  default:
-    name: jahongir-network
+  postgres-data:
+    name: jahongir-postgres-data
+  redis-data:
+    name: jahongir-redis-data

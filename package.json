@@ -14,9 +14,16 @@
   },
   "devDependencies": {
     "@turbo/gen": "^2.3.3",
+    "maildev": "^2.2.1",
     "prettier": "^3.4.2",
     "turbo": "^2.3.3",
     "typescript": "^5.7.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^18.3.27",
+      "@types/react-dom": "^18.3.5"
+    }
   },
   "packageManager": "pnpm@9.15.0",
   "engines": {

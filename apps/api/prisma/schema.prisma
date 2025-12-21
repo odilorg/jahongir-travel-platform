@@ -64,7 +64,6 @@ model Tour {
   @@index([categoryId])
   @@index([isActive])
   @@index([isFeatured])
-  @@fulltext([title, description])
 }
 
 model TourCategory {
@@ -163,7 +162,11 @@ model Booking {
   tourId          String
   tour            Tour     @relation(fields: [tourId], references: [id])
 
-  // Customer info
+  // Guest relation (tracks repeat customers)
+  guestId         String?
+  guest           Guest?   @relation(fields: [guestId], references: [id])
+
+  // Customer info (kept for backward compat & historical accuracy)
   customerName    String
   customerEmail   String
   customerPhone   String?
@@ -184,14 +187,57 @@ model Booking {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // Staff assignments
+  guides          BookingGuide[]
+  drivers         BookingDriver[]
+
   @@index([tourId])
+  @@index([guestId])
   @@index([customerEmail])
   @@index([status])
+}
+
+// ============================================================================
+// GUESTS (Customer tracking for repeat bookings)
+// ============================================================================
+
+model Guest {
+  id                String    @id @default(cuid())
+
+  // Contact info (email is unique identifier for repeat customer detection)
+  email             String    @unique
+  name              String
+  phone             String?
+
+  // Additional profile info
+  country           String?
+  preferredLanguage String?   @default("ru") // ru, en, uz
+
+  // Denormalized stats (for fast queries)
+  totalBookings     Int       @default(0)
+  totalSpent        Decimal   @default(0) @db.Decimal(10, 2)
+  lastBookingAt     DateTime?
+
+  // Admin notes
+  notes             String?   @db.Text
+
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  bookings          Booking[]
+
+  @@index([email])
+  @@index([name])
+  @@index([totalBookings])
+  @@index([createdAt])
 }
 
 model TourInquiry {
   id              String   @id @default(cuid())
   tourId          String?
+  tour            Tour?    @relation(fields: [tourId], references: [id])
 
   // Contact info
   name            String
@@ -210,6 +256,7 @@ model TourInquiry {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@index([tourId])
   @@index([email])
   @@index([status])
   @@index([createdAt])
@@ -317,7 +364,6 @@ model BlogPost {
   @@index([authorId])
   @@index([status])
   @@index([publishedAt])
-  @@fulltext([title, content])
 }
 
 model BlogCategory {
@@ -409,6 +455,74 @@ model Lead {
   @@index([email])
   @@index([status])
   @@index([priority])
+}
+
+// ============================================================================
+// GUIDES & DRIVERS (Tour Staff)
+// ============================================================================
+
+model Guide {
+  id              String    @id @default(cuid())
+  name            String
+  phone           String?
+  email           String?
+  languages       String[]  // ["ru", "en", "uz", "de", "fr", etc.]
+  notes           String?   @db.Text
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  bookings        BookingGuide[]
+
+  @@index([isActive])
+  @@index([name])
+}
+
+model Driver {
+  id              String    @id @default(cuid())
+  name            String
+  phone           String?
+  licenseNumber   String?
+  vehicleInfo     String?   // "Toyota Hiace 2020, White, 01A123BC"
+  languages       String[]
+  notes           String?   @db.Text
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  bookings        BookingDriver[]
+
+  @@index([isActive])
+  @@index([name])
+}
+
+model BookingGuide {
+  id        String   @id @default(cuid())
+  bookingId String
+  guideId   String
+  role      String?  // "lead", "assistant"
+
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, guideId])
+  @@index([bookingId])
+  @@index([guideId])
+}
+
+model BookingDriver {
+  id        String   @id @default(cuid())
+  bookingId String
+  driverId  String
+
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  driver    Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, driverId])
+  @@index([bookingId])
+  @@index([driverId])
 }
 
 // ============================================================================
