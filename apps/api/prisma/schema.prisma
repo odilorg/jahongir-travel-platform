@@ -484,7 +484,6 @@ model Driver {
   name            String
   phone           String?
   licenseNumber   String?
-  vehicleInfo     String?   // "Toyota Hiace 2020, White, 01A123BC"
   languages       String[]
   notes           String?   @db.Text
   isActive        Boolean   @default(true)
@@ -493,9 +492,38 @@ model Driver {
   updatedAt       DateTime  @updatedAt
 
   bookings        BookingDriver[]
+  vehicles        Vehicle[]
 
   @@index([isActive])
   @@index([name])
+}
+
+model Vehicle {
+  id              String    @id @default(cuid())
+  driverId        String
+  driver          Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  // Vehicle details
+  plateNumber     String    @unique
+  make            String    // Toyota, Mercedes, etc.
+  model           String    // Hiace, Sprinter, etc.
+  year            Int?
+  color           String?
+  capacity        Int?      // Passenger capacity
+  type            String    @default("sedan") // sedan, minivan, suv, bus, van
+
+  // Status
+  isActive        Boolean   @default(true)
+  notes           String?   @db.Text
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  bookings        BookingDriver[]
+
+  @@index([driverId])
+  @@index([plateNumber])
+  @@index([isActive])
 }
 
 model BookingGuide {
@@ -516,13 +544,16 @@ model BookingDriver {
   id        String   @id @default(cuid())
   bookingId String
   driverId  String
+  vehicleId String?  // Optional: specific vehicle for this booking
 
   booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   driver    Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
 
   @@unique([bookingId, driverId])
   @@index([bookingId])
   @@index([driverId])
+  @@index([vehicleId])
 }
 
 // ============================================================================
@@ -545,6 +576,10 @@ model User {
   isActive    Boolean  @default(true)
   emailVerified Boolean @default(false)
 
+  // Password Reset
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
+
   // Timestamps
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -553,6 +588,7 @@ model User {
   blogPosts   BlogPost[]
 
   @@index([email])
+  @@index([resetToken])
   @@index([role])
 }
 

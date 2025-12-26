@@ -22,7 +22,6 @@ export class DriversService {
         name: createDriverDto.name,
         phone: createDriverDto.phone,
         licenseNumber: createDriverDto.licenseNumber,
-        vehicleInfo: createDriverDto.vehicleInfo,
         languages: createDriverDto.languages || [],
         notes: createDriverDto.notes,
       },
@@ -52,11 +51,10 @@ export class DriversService {
       where.isActive = isActive;
     }
 
-    // Search by name or vehicle info
+    // Search by name or license number
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { vehicleInfo: { contains: search, mode: 'insensitive' } },
         { licenseNumber: { contains: search, mode: 'insensitive' } },
       ];
     }
@@ -153,7 +151,6 @@ export class DriversService {
         ...(updateDriverDto.name && { name: updateDriverDto.name }),
         ...(updateDriverDto.phone !== undefined && { phone: updateDriverDto.phone }),
         ...(updateDriverDto.licenseNumber !== undefined && { licenseNumber: updateDriverDto.licenseNumber }),
-        ...(updateDriverDto.vehicleInfo !== undefined && { vehicleInfo: updateDriverDto.vehicleInfo }),
         ...(updateDriverDto.languages && { languages: updateDriverDto.languages }),
         ...(updateDriverDto.notes !== undefined && { notes: updateDriverDto.notes }),
         ...(updateDriverDto.isActive !== undefined && { isActive: updateDriverDto.isActive }),
@@ -220,7 +217,6 @@ export class DriversService {
       topDrivers: topDrivers.map(d => ({
         id: d.id,
         name: d.name,
-        vehicleInfo: d.vehicleInfo,
         assignmentCount: d._count.bookings,
       })),
     };

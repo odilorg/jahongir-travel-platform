@@ -178,7 +178,7 @@ export class BookingsController {
     @Param('id') id: string,
     @Body() assignDriverDto: AssignDriverDto,
   ) {
-    return this.bookingsService.assignDriver(id, assignDriverDto.driverId);
+    return this.bookingsService.assignDriver(id, assignDriverDto.driverId, assignDriverDto.vehicleId);
   }
 
   /**

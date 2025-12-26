@@ -15,6 +15,7 @@ import { BookingsModule } from './bookings/bookings.module';
 import { GuestsModule } from './guests/guests.module';
 import { GuidesModule } from './guides/guides.module';
 import { DriversModule } from './drivers/drivers.module';
+import { VehiclesModule } from './vehicles/vehicles.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { EmailModule } from './email/email.module';
@@ -55,6 +56,7 @@ import { HealthModule } from './health/health.module';
     GuestsModule,
     GuidesModule,
     DriversModule,
+    VehiclesModule,
     UploadsModule,
     EmailModule,
     HealthModule,

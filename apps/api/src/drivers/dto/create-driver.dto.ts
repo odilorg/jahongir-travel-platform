@@ -27,11 +27,6 @@ export class CreateDriverDto {
   @IsOptional()
   licenseNumber?: string;
 
-  @IsString({ message: 'Vehicle info must be a string' })
-  @MaxLength(200, { message: 'Vehicle info cannot exceed 200 characters' })
-  @IsOptional()
-  vehicleInfo?: string;
-
   @IsArray({ message: 'Languages must be an array' })
   @IsString({ each: true, message: 'Each language must be a string' })
   @ArrayMaxSize(10, { message: 'Cannot have more than 10 languages' })

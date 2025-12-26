@@ -13,4 +13,8 @@ export class AssignGuideDto {
 export class AssignDriverDto {
   @IsString({ message: 'Driver ID must be a string' })
   driverId: string;
+
+  @IsString({ message: 'Vehicle ID must be a string' })
+  @IsOptional()
+  vehicleId?: string;
 }

@@ -1,7 +1,22 @@
-import { Controller, Post, Body, Get, UseGuards, Request, Res } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Request, Res, HttpCode } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { IsEmail, IsString, MinLength } from 'class-validator';
+
+class ForgotPasswordDto {
+  @IsEmail({}, { message: 'Invalid email format' })
+  email: string;
+}
+
+class ResetPasswordDto {
+  @IsString({ message: 'Token is required' })
+  token: string;
+
+  @IsString({ message: 'Password is required' })
+  @MinLength(6, { message: 'Password must be at least 6 characters' })
+  password: string;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -54,5 +69,17 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async getProfile(@Request() req: any) {
     return req.user;
+  }
+
+  @Post('forgot-password')
+  @HttpCode(200)
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.authService.forgotPassword(body.email);
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body.token, body.password);
   }
 }

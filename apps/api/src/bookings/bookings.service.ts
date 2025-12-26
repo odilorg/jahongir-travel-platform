@@ -489,7 +489,7 @@ export class BookingsService {
   /**
    * Assign driver to booking
    */
-  async assignDriver(bookingId: string, driverId: string) {
+  async assignDriver(bookingId: string, driverId: string, vehicleId?: string) {
     // Verify booking exists
     const booking = await this.prisma.booking.findUnique({
       where: { id: bookingId },
@@ -508,6 +508,21 @@ export class BookingsService {
       throw new NotFoundException('Driver not found');
     }
 
+    // If vehicle specified, verify it exists and belongs to this driver
+    if (vehicleId) {
+      const vehicle = await this.prisma.vehicle.findUnique({
+        where: { id: vehicleId },
+      });
+
+      if (!vehicle) {
+        throw new NotFoundException('Vehicle not found');
+      }
+
+      if (vehicle.driverId !== driverId) {
+        throw new BadRequestException('Vehicle does not belong to this driver');
+      }
+    }
+
     // Create assignment (upsert to handle duplicate gracefully)
     const assignment = await this.prisma.bookingDriver.upsert({
       where: {
@@ -516,14 +531,18 @@ export class BookingsService {
       create: {
         bookingId,
         driverId,
+        vehicleId,
       },
-      update: {},
+      update: {
+        vehicleId,
+      },
       include: {
         driver: true,
+        vehicle: true,
       },
     });
 
-    this.logger.log(`Driver ${driverId} assigned to booking ${bookingId}`);
+    this.logger.log(`Driver ${driverId}${vehicleId ? ` with vehicle ${vehicleId}` : ''} assigned to booking ${bookingId}`);
 
     return assignment;
   }
@@ -582,7 +601,23 @@ export class BookingsService {
         },
         drivers: {
           include: {
-            driver: true,
+            driver: {
+              include: {
+                vehicles: {
+                  where: { isActive: true },
+                  select: {
+                    id: true,
+                    plateNumber: true,
+                    make: true,
+                    model: true,
+                    color: true,
+                    capacity: true,
+                    type: true,
+                  },
+                },
+              },
+            },
+            vehicle: true,
           },
         },
       },

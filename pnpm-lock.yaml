@@ -163,9 +163,6 @@ importers:
       '@types/multer':
         specifier: ^2.0.0
         version: 2.0.0
-      '@types/nodemailer':
-        specifier: ^7.0.4
-        version: 7.0.4
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
@@ -227,6 +224,9 @@ importers:
       '@types/node':
         specifier: ^22.10.7
         version: 22.19.3
+      '@types/nodemailer':
+        specifier: ^7.0.4
+        version: 7.0.4
       '@types/passport-jwt':
         specifier: ^4.0.1
         version: 4.0.1

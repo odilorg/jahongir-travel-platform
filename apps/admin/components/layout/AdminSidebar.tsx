@@ -16,6 +16,7 @@ import {
   LogOut,
   MapPin,
   Car,
+  Truck,
 } from 'lucide-react';
 import { AdminNavItem } from './AdminNavItem';
 import { cn } from '@/lib/utils';
@@ -50,6 +51,7 @@ const navigationItems = [
     items: [
       { href: '/guides', icon: MapPin, label: 'Guides' },
       { href: '/drivers', icon: Car, label: 'Drivers' },
+      { href: '/vehicles', icon: Truck, label: 'Vehicles' },
     ],
   },
   {
