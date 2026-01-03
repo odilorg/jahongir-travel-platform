@@ -17,6 +17,7 @@ import { GuidesModule } from './guides/guides.module';
 import { DriversModule } from './drivers/drivers.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { EmailModule } from './email/email.module';
 import { HealthModule } from './health/health.module';
@@ -46,6 +47,7 @@ import { HealthModule } from './health/health.module';
     ]),
     PrismaModule,
     AuthModule,
+    UsersModule,
     ToursModule,
     CategoriesModule,
     BlogModule,
