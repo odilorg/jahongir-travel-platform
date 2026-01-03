@@ -47,3 +47,14 @@ Thumbs.db
 
 # Prisma
 prisma/migrations/dev.db*
+
+# Claude Code context (environment-specific, not shared via git)
+.claude/SESSION_STATE.json
+.claude/SESSION_STATE.*.json
+
+# Note: These .claude files ARE tracked in git (shared context):
+# - .claude/PROJECT_CONTEXT.md
+# - .claude/KNOWN_ISSUES.md
+# - .claude/WORK_LOG.md
+# - .claude/README.md
+# - .claude/rules/

@@ -91,7 +91,7 @@ export class ToursService {
     }
 
     // Execute query with pagination
-    const skip = (page - 1) * limit;
+    const skip = ((page ?? 1) - 1) * (limit ?? 20);
 
     const [tours, total] = await Promise.all([
       this.prisma.tour.findMany({
@@ -119,18 +119,69 @@ export class ToursService {
       this.prisma.tour.count({ where }),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
+    const currentPage = page ?? 1;
+    const currentLimit = limit ?? 20;
+    const totalPages = Math.ceil(total / currentLimit);
 
     return {
       data: tours,
       meta: {
         total,
-        page,
-        limit,
+        page: currentPage,
+        limit: currentLimit,
         totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
+        hasNext: currentPage < totalPages,
+        hasPrev: currentPage > 1,
       },
+    };
+  }
+
+  async findById(id: string) {
+    const tour = await this.prisma.tour.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        itineraryItems: {
+          orderBy: { day: 'asc' },
+          include: {
+            cities: true,
+          },
+        },
+        reviews: {
+          where: { isApproved: true },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+        faqs: {
+          orderBy: { order: 'asc' },
+        },
+        _count: {
+          select: {
+            reviews: true,
+            bookings: true,
+          },
+        },
+      },
+    });
+
+    if (!tour) {
+      throw new NotFoundException(`Tour with ID "${id}" not found`);
+    }
+
+    // Calculate average rating
+    const avgRating = await this.prisma.review.aggregate({
+      where: {
+        tourId: tour.id,
+        isApproved: true,
+      },
+      _avg: {
+        rating: true,
+      },
+    });
+
+    return {
+      ...tour,
+      averageRating: avgRating._avg.rating ? Number(avgRating._avg.rating.toFixed(1)) : null,
     };
   }
 

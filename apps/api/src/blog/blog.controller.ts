@@ -36,6 +36,11 @@ export class BlogController {
     return this.blogService.getFeatured(parsedLimit);
   }
 
+  @Get('id/:id')
+  findById(@Param('id') id: string) {
+    return this.blogService.findById(id);
+  }
+
   @Get(':slug')
   findOne(@Param('slug') slug: string) {
     return this.blogService.findOne(slug);

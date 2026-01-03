@@ -79,7 +79,7 @@ export class BlogService {
         orderBy = { createdAt: 'desc' };
     }
 
-    const skip = (page - 1) * limit;
+    const skip = ((page ?? 1) - 1) * (limit ?? 20);
 
     const [posts, total] = await Promise.all([
       this.prisma.blogPost.findMany({
@@ -106,17 +106,19 @@ export class BlogService {
       this.prisma.blogPost.count({ where }),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
+    const currentPage = page ?? 1;
+    const currentLimit = limit ?? 20;
+    const totalPages = Math.ceil(total / currentLimit);
 
     return {
       data: posts,
       meta: {
         total,
-        page,
-        limit,
+        page: currentPage,
+        limit: currentLimit,
         totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
+        hasNext: currentPage < totalPages,
+        hasPrev: currentPage > 1,
       },
     };
   }
@@ -168,11 +170,35 @@ export class BlogService {
     return post;
   }
 
+  async findById(id: string) {
+    const post = await this.prisma.blogPost.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            bio: true,
+          },
+        },
+        city: true,
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException(`Blog post with id "${id}" not found`);
+    }
+
+    return post;
+  }
+
   async update(id: string, updatePostDto: UpdatePostDto) {
     try {
       const existingPost = await this.prisma.blogPost.findUnique({ where: { id } });
       const shouldSetPublishedAt = updatePostDto.status === 'published' && !existingPost?.publishedAt;
-      
+
       const post = await this.prisma.blogPost.update({
         where: { id },
         data: {
@@ -181,7 +207,13 @@ export class BlogService {
         },
         include: {
           category: true,
-          author: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
       });
 

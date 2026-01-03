@@ -162,7 +162,11 @@ model Booking {
   tourId          String
   tour            Tour     @relation(fields: [tourId], references: [id])
 
-  // Customer info
+  // Guest relation (tracks repeat customers)
+  guestId         String?
+  guest           Guest?   @relation(fields: [guestId], references: [id])
+
+  // Customer info (kept for backward compat & historical accuracy)
   customerName    String
   customerEmail   String
   customerPhone   String?
@@ -183,15 +187,57 @@ model Booking {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // Staff assignments
+  guides          BookingGuide[]
+  drivers         BookingDriver[]
+
   @@index([tourId])
+  @@index([guestId])
   @@index([customerEmail])
   @@index([status])
+}
+
+// ============================================================================
+// GUESTS (Customer tracking for repeat bookings)
+// ============================================================================
+
+model Guest {
+  id                String    @id @default(cuid())
+
+  // Contact info (email is unique identifier for repeat customer detection)
+  email             String    @unique
+  name              String
+  phone             String?
+
+  // Additional profile info
+  country           String?
+  preferredLanguage String?   @default("ru") // ru, en, uz
+
+  // Denormalized stats (for fast queries)
+  totalBookings     Int       @default(0)
+  totalSpent        Decimal   @default(0) @db.Decimal(10, 2)
+  lastBookingAt     DateTime?
+
+  // Admin notes
+  notes             String?   @db.Text
+
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  bookings          Booking[]
+
+  @@index([email])
+  @@index([name])
+  @@index([totalBookings])
+  @@index([createdAt])
 }
 
 model TourInquiry {
   id              String   @id @default(cuid())
   tourId          String?
-  tour            Tour?     @relation(fields: [tourId], references: [id])
+  tour            Tour?    @relation(fields: [tourId], references: [id])
 
   // Contact info
   name            String
@@ -210,6 +256,7 @@ model TourInquiry {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@index([tourId])
   @@index([email])
   @@index([status])
   @@index([createdAt])
@@ -411,6 +458,105 @@ model Lead {
 }
 
 // ============================================================================
+// GUIDES & DRIVERS (Tour Staff)
+// ============================================================================
+
+model Guide {
+  id              String    @id @default(cuid())
+  name            String
+  phone           String?
+  email           String?
+  languages       String[]  // ["ru", "en", "uz", "de", "fr", etc.]
+  notes           String?   @db.Text
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  bookings        BookingGuide[]
+
+  @@index([isActive])
+  @@index([name])
+}
+
+model Driver {
+  id              String    @id @default(cuid())
+  name            String
+  phone           String?
+  licenseNumber   String?
+  languages       String[]
+  notes           String?   @db.Text
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  bookings        BookingDriver[]
+  vehicles        Vehicle[]
+
+  @@index([isActive])
+  @@index([name])
+}
+
+model Vehicle {
+  id              String    @id @default(cuid())
+  driverId        String
+  driver          Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  // Vehicle details
+  plateNumber     String    @unique
+  make            String    // Toyota, Mercedes, etc.
+  model           String    // Hiace, Sprinter, etc.
+  year            Int?
+  color           String?
+  capacity        Int?      // Passenger capacity
+  type            String    @default("sedan") // sedan, minivan, suv, bus, van
+
+  // Status
+  isActive        Boolean   @default(true)
+  notes           String?   @db.Text
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  bookings        BookingDriver[]
+
+  @@index([driverId])
+  @@index([plateNumber])
+  @@index([isActive])
+}
+
+model BookingGuide {
+  id        String   @id @default(cuid())
+  bookingId String
+  guideId   String
+  role      String?  // "lead", "assistant"
+
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, guideId])
+  @@index([bookingId])
+  @@index([guideId])
+}
+
+model BookingDriver {
+  id        String   @id @default(cuid())
+  bookingId String
+  driverId  String
+  vehicleId String?  // Optional: specific vehicle for this booking
+
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  driver    Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  @@unique([bookingId, driverId])
+  @@index([bookingId])
+  @@index([driverId])
+  @@index([vehicleId])
+}
+
+// ============================================================================
 // USERS & AUTH
 // ============================================================================
 
@@ -430,6 +576,10 @@ model User {
   isActive    Boolean  @default(true)
   emailVerified Boolean @default(false)
 
+  // Password Reset
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
+
   // Timestamps
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -438,6 +588,7 @@ model User {
   blogPosts   BlogPost[]
 
   @@index([email])
+  @@index([resetToken])
   @@index([role])
 }
 

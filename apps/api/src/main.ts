@@ -1,19 +1,30 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const logger = new Logger('Bootstrap');
+
+  // Serve static files from uploads directory
+  // Use process.cwd() to get the correct path regardless of compiled location
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // Enable CORS
   app.enableCors({
     origin: [
       'http://localhost:3000', // Web app
       'http://localhost:3001', // Admin app
+      'http://localhost:3002', // Web app (alternate port)
+      'http://localhost:3003', // Web app (alternate port)
+      'http://localhost:3004', // Admin app (alternate port)
       process.env.WEB_URL,
       process.env.ADMIN_URL,
-    ].filter(Boolean),
+    ].filter((url): url is string => typeof url === 'string'),
     credentials: true,
   });
 
