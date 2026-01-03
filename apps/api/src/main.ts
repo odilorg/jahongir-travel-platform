@@ -17,11 +17,13 @@ async function bootstrap() {
   // Enable CORS
   app.enableCors({
     origin: [
-      'http://localhost:3000', // Web app
-      'http://localhost:3001', // Admin app
+      'http://localhost:3000', // Web app (local)
+      'http://localhost:3001', // Admin app (local)
       'http://localhost:3002', // Web app (alternate port)
       'http://localhost:3003', // Web app (alternate port)
       'http://localhost:3004', // Admin app (alternate port)
+      'http://dev.jahongir-travel.uz:3010', // Web app (VPS)
+      'http://dev.jahongir-travel.uz:3011', // Admin app (VPS)
       process.env.WEB_URL,
       process.env.ADMIN_URL,
     ].filter((url): url is string => typeof url === 'string'),
