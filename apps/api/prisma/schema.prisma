@@ -64,7 +64,6 @@ model Tour {
   @@index([categoryId])
   @@index([isActive])
   @@index([isFeatured])
-  @@fulltext([title, description])
 }
 
 model TourCategory {
@@ -192,6 +191,7 @@ model Booking {
 model TourInquiry {
   id              String   @id @default(cuid())
   tourId          String?
+  tour            Tour?     @relation(fields: [tourId], references: [id])
 
   // Contact info
   name            String
@@ -317,7 +317,6 @@ model BlogPost {
   @@index([authorId])
   @@index([status])
   @@index([publishedAt])
-  @@fulltext([title, content])
 }
 
 model BlogCategory {

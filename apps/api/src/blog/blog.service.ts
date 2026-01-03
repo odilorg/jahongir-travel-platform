@@ -48,7 +48,7 @@ export class BlogService {
   }
 
   async findAll(query: FindAllPostsDto) {
-    const { page, limit, categoryId, cityId, search, status, sortBy } = query;
+    const { page = 1, limit = 20, categoryId, cityId, search, status, sortBy } = query;
 
     const where: Prisma.BlogPostWhereInput = {
       ...(status && { status }),
@@ -170,12 +170,14 @@ export class BlogService {
 
   async update(id: string, updatePostDto: UpdatePostDto) {
     try {
+      const existingPost = await this.prisma.blogPost.findUnique({ where: { id } });
+      const shouldSetPublishedAt = updatePostDto.status === 'published' && !existingPost?.publishedAt;
+      
       const post = await this.prisma.blogPost.update({
         where: { id },
         data: {
           ...updatePostDto,
-          ...(updatePostDto.status === 'published' &&
-            !updatePostDto.publishedAt && { publishedAt: new Date() }),
+          ...(shouldSetPublishedAt && { publishedAt: new Date() }),
         },
         include: {
           category: true,

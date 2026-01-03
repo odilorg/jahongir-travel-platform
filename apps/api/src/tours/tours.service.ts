@@ -18,11 +18,12 @@ export class ToursService {
 
   async create(createTourDto: CreateTourDto) {
     try {
+      const { categoryId, ...tourData } = createTourDto;
       const tour = await this.prisma.tour.create({
         data: {
-          ...createTourDto,
+          ...tourData,
           category: {
-            connect: { id: createTourDto.categoryId },
+            connect: { id: categoryId },
           },
         },
         include: {
@@ -44,7 +45,7 @@ export class ToursService {
   }
 
   async findAll(query: FindAllToursDto) {
-    const { page, limit, categoryId, minDuration, maxDuration, minPrice, maxPrice, difficulty, search, sortBy, featured } = query;
+    const { page = 1, limit = 20, categoryId, minDuration, maxDuration, minPrice, maxPrice, difficulty, search, sortBy, featured } = query;
 
     // Build where clause
     const where: Prisma.TourWhereInput = {
@@ -196,13 +197,14 @@ export class ToursService {
 
   async update(id: string, updateTourDto: UpdateTourDto) {
     try {
+      const { categoryId, ...updateData } = updateTourDto;
       const tour = await this.prisma.tour.update({
         where: { id },
         data: {
-          ...updateTourDto,
-          ...(updateTourDto.categoryId && {
+          ...updateData,
+          ...(categoryId && {
             category: {
-              connect: { id: updateTourDto.categoryId },
+              connect: { id: categoryId },
             },
           }),
         },
