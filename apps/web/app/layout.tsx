@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Navigation } from "@/components/navigation";
-import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Jahongir Travel - Unforgettable Cultural Immersion in Uzbekistan",
@@ -13,13 +11,5 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body className="antialiased">
-        <Navigation />
-        {children}
-        <Footer />
-      </body>
-    </html>
-  );
+  return children;
 }
