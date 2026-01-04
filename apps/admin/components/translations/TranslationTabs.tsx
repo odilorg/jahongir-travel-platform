@@ -139,8 +139,21 @@ export function TranslationTabs({
       setSaving(true);
       const currentData = formData[activeLocale];
 
-      // Remove locale and id fields from data
-      const { locale, id, createdAt, updatedAt, ...dataToSave } = currentData;
+      // Remove locale, id, timestamps, and foreign key fields from data
+      const {
+        locale,
+        id,
+        createdAt,
+        updatedAt,
+        // Foreign keys that shouldn't be sent in body (already in URL path)
+        tourId,
+        postId,
+        categoryId,
+        cityId,
+        itemId,
+        faqId,
+        ...dataToSave
+      } = currentData;
 
       await api.put(
         `/api/admin/translations/${entityType}/${entityId}/${activeLocale}`,
