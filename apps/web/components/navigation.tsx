@@ -4,15 +4,14 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Search, Phone, Mail, Globe } from "lucide-react"
 import { usePathname, useRouter, Link } from '@/i18n/routing'
-import { useParams } from 'next/navigation'
+import { useLocale } from 'next-intl'
 
 export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [langMenuOpen, setLangMenuOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const params = useParams()
-  const currentLocale = params.locale as string
+  const currentLocale = useLocale()
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇬🇧' },
