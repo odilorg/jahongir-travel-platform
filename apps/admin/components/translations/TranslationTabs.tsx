@@ -140,18 +140,19 @@ export function TranslationTabs({
       const currentData = formData[activeLocale];
 
       // Remove locale, id, timestamps, and foreign key fields from data
+      // Using underscore prefix to suppress unused variable warnings
       const {
-        locale,
-        id,
-        createdAt,
-        updatedAt,
+        locale: _locale,
+        id: _id,
+        createdAt: _createdAt,
+        updatedAt: _updatedAt,
         // Foreign keys that shouldn't be sent in body (already in URL path)
-        tourId,
-        postId,
-        categoryId,
-        cityId,
-        itemId,
-        faqId,
+        tourId: _tourId,
+        postId: _postId,
+        categoryId: _categoryId,
+        cityId: _cityId,
+        itemId: _itemId,
+        faqId: _faqId,
         ...dataToSave
       } = currentData;
 

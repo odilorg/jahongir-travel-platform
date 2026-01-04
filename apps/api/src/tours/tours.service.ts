@@ -637,11 +637,27 @@ export class ToursService {
 
   async update(id: string, updateTourDto: UpdateTourDto) {
     try {
-      const { categoryId, ...updateData } = updateTourDto;
+      const {
+        categoryId,
+        // Filter out translation fields - these belong in TourTranslation, not Tour
+        title: _title,
+        slug: _slug,
+        description: _description,
+        shortDescription: _shortDescription,
+        highlights: _highlights,
+        included: _included,
+        excluded: _excluded,
+        metaTitle: _metaTitle,
+        metaDescription: _metaDescription,
+        metaKeywords: _metaKeywords,
+        // Keep only Tour model fields
+        ...tourData
+      } = updateTourDto;
+
       const tour = await this.prisma.tour.update({
         where: { id },
         data: {
-          ...updateData,
+          ...tourData,
           ...(categoryId && {
             category: {
               connect: { id: categoryId },

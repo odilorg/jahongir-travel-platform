@@ -218,7 +218,7 @@ export function TourForm({ initialData, onSubmit, submitting }: TourFormProps) {
                 <div className="space-y-2">
                   <Label htmlFor="categoryId">Category *</Label>
                   <Select
-                    value={watch('categoryId')}
+                    value={watch('categoryId') || ''}
                     onValueChange={(value) => setValue('categoryId', value)}
                   >
                     <SelectTrigger id="categoryId" className="w-full">

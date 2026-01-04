@@ -10,7 +10,8 @@ import { TranslationTabs } from '@/components/translations/TranslationTabs';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
-interface Tour {
+// Raw API response type
+interface TourApiResponse {
   id: string;
   title: string;
   slug: string;
@@ -36,6 +37,33 @@ interface Tour {
   updatedAt: string;
 }
 
+// Transformed type for form (with numbers instead of strings for prices)
+interface Tour {
+  id: string;
+  title: string;
+  slug: string;
+  categoryId: string;
+  duration: number;
+  maxGroupSize: number;
+  price: number;
+  difficulty: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  shortDescription: string | null;
+  description: string | null;
+  highlights: string[];
+  included: string[];
+  excluded: string[];
+  images: string[];
+  metaTitle: string | null;
+  metaDescription: string | null;
+  metaKeywords: string | null;
+  showPrice: boolean;
+  discountedPrice: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function EditTourPage() {
   const params = useParams<{ id: string }>();
   const paramId = params.id;
@@ -53,20 +81,21 @@ export default function EditTourPage() {
     setLoading(true);
     try {
       // paramId contains tour ID from URL, use /api/tours/id/:id endpoint
-      const data = await api.get<Tour>(`/api/tours/id/${paramId}`);
+      const data = await api.get<TourApiResponse>(`/api/tours/id/${paramId}`);
 
       // Store the actual ID for PATCH requests
       setTourId(data.id);
 
       // Transform null values to proper defaults for form
-      const transformedData = {
+      const transformedData: Tour = {
         ...data,
         highlights: data.highlights || [],
         included: data.included || [],
         excluded: data.excluded || [],
         images: data.images || [],
-        price: data.price || '0',
-        discountedPrice: data.discountedPrice || '0',
+        // Convert price strings to numbers for Zod validation
+        price: data.price ? parseFloat(data.price) : 0,
+        discountedPrice: data.discountedPrice ? parseFloat(data.discountedPrice) : 0,
         maxGroupSize: data.maxGroupSize || 15,
         difficulty: data.difficulty || '',
       };
