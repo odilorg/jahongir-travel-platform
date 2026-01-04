@@ -163,6 +163,102 @@ export async function getCategories(params?: {
 }
 
 // ============================================
+// BLOG
+// ============================================
+
+export interface BlogPost {
+  id: string
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  featuredImage: string | null
+  categoryId: string | null
+  authorId: string
+  metaTitle: string | null
+  metaDescription: string | null
+  metaKeywords: string | null
+  status: string
+  viewCount: number
+  createdAt: string
+  updatedAt: string
+  publishedAt: string | null
+  category: {
+    id: string
+    name: string
+    slug: string
+  } | null
+  author: {
+    id: string
+    name: string
+    avatar: string | null
+  }
+  _count: {
+    comments: number
+  }
+}
+
+export async function getBlogPosts(params?: {
+  page?: number
+  limit?: number
+  categoryId?: string
+  locale?: string
+}): Promise<PaginatedResponse<BlogPost>> {
+  const searchParams = new URLSearchParams()
+
+  if (params?.page) searchParams.set('page', params.page.toString())
+  if (params?.limit) searchParams.set('limit', params.limit.toString())
+  if (params?.categoryId) searchParams.set('categoryId', params.categoryId)
+  if (params?.locale) searchParams.set('lang', params.locale)
+
+  const url = `${API_BASE_URL}/blog?${searchParams}`
+
+  const res = await fetch(url, {
+    next: { revalidate: 60 }
+  })
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch blog posts')
+  }
+
+  return res.json()
+}
+
+export async function getBlogPostBySlug(slug: string, locale?: string): Promise<BlogPost> {
+  const searchParams = new URLSearchParams()
+  if (locale) searchParams.set('lang', locale)
+
+  const url = `${API_BASE_URL}/blog/${slug}?${searchParams}`
+
+  const res = await fetch(url, {
+    next: { revalidate: 60 }
+  })
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch blog post')
+  }
+
+  return res.json()
+}
+
+export async function getBlogCategories(locale?: string): Promise<Category[]> {
+  const searchParams = new URLSearchParams()
+  if (locale) searchParams.set('lang', locale)
+
+  const url = `${API_BASE_URL}/blog/categories?${searchParams}`
+
+  const res = await fetch(url, {
+    next: { revalidate: 300 }
+  })
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch blog categories')
+  }
+
+  return res.json()
+}
+
+// ============================================
 // FORM SUBMISSIONS
 // ============================================
 
