@@ -1,7 +1,12 @@
-import { IsOptional, IsInt, Min, Max, IsString, IsEnum } from 'class-validator';
+import { IsOptional, IsInt, Min, Max, IsString, IsEnum, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class FindAllPostsDto {
+  @IsOptional()
+  @IsString()
+  @IsIn(['en', 'ru', 'uz'])
+  lang?: 'en' | 'ru' | 'uz';
+
   @IsOptional()
   @IsInt()
   @Min(1)
