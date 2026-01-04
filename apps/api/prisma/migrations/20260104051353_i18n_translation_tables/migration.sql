@@ -1,7 +1,11 @@
 -- ============================================================================
 -- STEP 1: Create Locale enum
 -- ============================================================================
-CREATE TYPE "Locale" AS ENUM ('en', 'ru', 'uz');
+DO $$ BEGIN
+    CREATE TYPE "Locale" AS ENUM ('en', 'ru', 'uz');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- ============================================================================
 -- STEP 2: Create Translation Tables
@@ -202,7 +206,7 @@ INSERT INTO "TourTranslation" (
 SELECT
     gen_random_uuid()::TEXT,
     "id",
-    'en'::Locale,
+    'en'::"Locale",
     "title",
     "slug",
     "shortDescription",
@@ -225,7 +229,7 @@ INSERT INTO "TourCategoryTranslation" (
 SELECT
     gen_random_uuid()::TEXT,
     "id",
-    'en'::Locale,
+    'en'::"Locale",
     "name",
     "slug",
     "description",
@@ -242,7 +246,7 @@ INSERT INTO "ItineraryItemTranslation" (
 SELECT
     gen_random_uuid()::TEXT,
     "id",
-    'en'::Locale,
+    'en'::"Locale",
     "title",
     "description",
     "activities",
@@ -259,7 +263,7 @@ INSERT INTO "TourFaqTranslation" (
 SELECT
     gen_random_uuid()::TEXT,
     "id",
-    'en'::Locale,
+    'en'::"Locale",
     "question",
     "answer",
     "createdAt",
@@ -275,7 +279,7 @@ INSERT INTO "CityTranslation" (
 SELECT
     gen_random_uuid()::TEXT,
     "id",
-    'en'::Locale,
+    'en'::"Locale",
     "name",
     "slug",
     "description",
@@ -294,7 +298,7 @@ INSERT INTO "BlogPostTranslation" (
 SELECT
     gen_random_uuid()::TEXT,
     "id",
-    'en'::Locale,
+    'en'::"Locale",
     "title",
     "slug",
     "excerpt",
@@ -314,7 +318,7 @@ INSERT INTO "BlogCategoryTranslation" (
 SELECT
     gen_random_uuid()::TEXT,
     "id",
-    'en'::Locale,
+    'en'::"Locale",
     "name",
     "slug",
     "description",

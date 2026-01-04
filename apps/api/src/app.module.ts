@@ -22,6 +22,7 @@ import { UploadsModule } from './uploads/uploads.module';
 import { EmailModule } from './email/email.module';
 import { HealthModule } from './health/health.module';
 import { AdminTranslationsModule } from './admin-translations/admin-translations.module';
+import { TranslationCoverageService } from './common/services/translation-coverage.service';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { AdminTranslationsModule } from './admin-translations/admin-translations
   controllers: [AppController],
   providers: [
     AppService,
+    TranslationCoverageService,
     // Apply throttling globally
     {
       provide: APP_GUARD,
