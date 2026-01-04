@@ -1,7 +1,13 @@
-import Link from "next/link"
+"use client"
+
 import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react"
+import { Link } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 
 export function Footer() {
+  const t = useTranslations('footer')
+  const tNav = useTranslations('navigation')
+
   return (
     <footer className="bg-brand-navy text-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
@@ -10,7 +16,7 @@ export function Footer() {
           <div>
             <h3 className="text-xl font-bold mb-4">Jahongir Travel</h3>
             <p className="text-gray-300 mb-4">
-              Your trusted partner for unforgettable journeys through the Silk Road treasures of Uzbekistan.
+              {t('companyDescription')}
             </p>
             <div className="flex gap-4">
               <a href="#" className="text-gray-300 hover:text-white transition-colors">
@@ -27,26 +33,26 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('quickLinks')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/tours" className="text-gray-300 hover:text-white transition-colors">
-                  All Tours
+                  {t('allTours')}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
-                  About Us
+                  {t('aboutUs')}
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                  Contact
+                  {tNav('contact')}
                 </Link>
               </li>
               <li>
                 <Link href="/blog" className="text-gray-300 hover:text-white transition-colors">
-                  Blog
+                  {tNav('blog')}
                 </Link>
               </li>
             </ul>
@@ -54,7 +60,7 @@ export function Footer() {
 
           {/* Popular Destinations */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Popular Destinations</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('popularDestinations')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/tours?destination=samarkand" className="text-gray-300 hover:text-white transition-colors">
@@ -81,7 +87,7 @@ export function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('contactUs')}</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" />
@@ -109,14 +115,14 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-gray-700">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} Jahongir Travel. All rights reserved.
+              © {new Date().getFullYear()} Jahongir Travel. {t('copyright')}
             </p>
             <div className="flex gap-6 text-sm">
               <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
-                Privacy Policy
+                {t('privacyPolicy')}
               </Link>
               <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
-                Terms of Service
+                {t('termsOfService')}
               </Link>
             </div>
           </div>

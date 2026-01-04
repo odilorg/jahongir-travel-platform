@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, MapPin, Calendar, Users } from "lucide-react"
 import { useState } from "react"
+import { useTranslations } from 'next-intl'
 
 export function HeroSection() {
+  const t = useTranslations('home.hero')
   const [searchData, setSearchData] = useState({
     destination: "",
     date: "",
@@ -34,12 +36,12 @@ export function HeroSection() {
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full flex items-center">
         <div className="max-w-4xl w-full">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-            JAHONGIR TRAVEL
+            {t('title')}
             <br />
-            <span className="text-2xl md:text-3xl lg:text-4xl font-normal">Your Gateway to Uzbekistan</span>
+            <span className="text-2xl md:text-3xl lg:text-4xl font-normal">{t('subtitle')}</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-200 mb-8">
-            Discover the ancient cities of the Silk Road with expert local guides
+            {t('description')}
           </p>
 
           {/* Search Form */}
@@ -49,10 +51,10 @@ export function HeroSection() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  Destination
+                  {t('destination')}
                 </label>
                 <Input
-                  placeholder="Where to?"
+                  placeholder={t('whereTo')}
                   value={searchData.destination}
                   onChange={(e) => setSearchData({ ...searchData, destination: e.target.value })}
                   className="h-12"
@@ -63,7 +65,7 @@ export function HeroSection() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  Travel Date
+                  {t('travelDate')}
                 </label>
                 <Input
                   type="date"
@@ -77,11 +79,11 @@ export function HeroSection() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Guests
+                  {t('guests')}
                 </label>
                 <Input
                   type="number"
-                  placeholder="Number of guests"
+                  placeholder={t('numberOfGuests')}
                   min="1"
                   value={searchData.guests}
                   onChange={(e) => setSearchData({ ...searchData, guests: e.target.value })}
@@ -96,7 +98,7 @@ export function HeroSection() {
               className="w-full mt-4 h-12 bg-primary hover:bg-primary/90 text-white font-semibold"
             >
               <Search className="mr-2 h-5 w-5" />
-              Search Tours
+              {t('searchTours')}
             </Button>
           </form>
         </div>

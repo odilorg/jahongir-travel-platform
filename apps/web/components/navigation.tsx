@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Search, Phone, Mail, Globe } from "lucide-react"
 import { usePathname, useRouter, Link } from '@/i18n/routing'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -12,6 +12,8 @@ export function Navigation() {
   const pathname = usePathname()
   const router = useRouter()
   const currentLocale = useLocale()
+  const t = useTranslations('navigation')
+  const tCommon = useTranslations('common')
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -40,7 +42,7 @@ export function Navigation() {
             </a>
           </div>
           <div className="text-xs text-gray-500">
-            Unforgettable Cultural Immersion in Uzbekistan
+            {t('tagline')}
           </div>
         </div>
 
@@ -60,37 +62,37 @@ export function Navigation() {
               href="/"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors"
             >
-              Home
+              {t('home')}
             </Link>
             <Link
               href="/tours"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors"
             >
-              Tours
+              {t('tours')}
             </Link>
             <Link
               href="/destinations"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors"
             >
-              Destinations
+              {t('destinations')}
             </Link>
             <Link
               href="/blog"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors"
             >
-              Blog
+              {t('blog')}
             </Link>
             <Link
               href="/about"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors"
             >
-              About
+              {t('about')}
             </Link>
             <Link
               href="/contact"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors"
             >
-              Contact
+              {t('contact')}
             </Link>
           </nav>
 
@@ -136,7 +138,7 @@ export function Navigation() {
               )}
             </div>
 
-            <Button size="sm">Book Now</Button>
+            <Button size="sm">{tCommon('bookNow')}</Button>
           </div>
 
           {/* Mobile menu button */}
@@ -162,49 +164,49 @@ export function Navigation() {
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Home
+              {t('home')}
             </Link>
             <Link
               href="/tours"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Tours
+              {t('tours')}
             </Link>
             <Link
               href="/destinations"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Destinations
+              {t('destinations')}
             </Link>
             <Link
               href="/blog"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Blog
+              {t('blog')}
             </Link>
             <Link
               href="/about"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              About
+              {t('about')}
             </Link>
             <Link
               href="/contact"
               className="text-sm font-medium text-gray-700 hover:text-primary transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Contact
+              {t('contact')}
             </Link>
 
             {/* Language Switcher - Mobile */}
             <div className="pt-4 border-t border-gray-100">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Globe className="h-4 w-4" />
-                Language
+                {t('language')}
               </p>
               <div className="space-y-2">
                 {languages.map((lang) => (
@@ -225,7 +227,7 @@ export function Navigation() {
               </div>
             </div>
 
-            <Button className="mt-4 w-full">Book Now</Button>
+            <Button className="mt-4 w-full">{tCommon('bookNow')}</Button>
           </nav>
         </div>
       )}

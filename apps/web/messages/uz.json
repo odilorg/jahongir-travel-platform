@@ -2,9 +2,12 @@
   "navigation": {
     "home": "Bosh sahifa",
     "tours": "Sayohatlar",
+    "destinations": "Yo'nalishlar",
     "blog": "Blog",
     "about": "Biz haqimizda",
-    "contact": "Aloqa"
+    "contact": "Aloqa",
+    "language": "Til",
+    "tagline": "O'zbekistonda unutilmas madaniy sayohat"
   },
   "common": {
     "home": "Bosh sahifa",
@@ -31,8 +34,15 @@
   },
   "home": {
     "hero": {
-      "title": "O'zbekistonni kashf eting",
-      "subtitle": "Tajribali gidlar bilan Buyuk Ipak yo'lini o'rganing",
+      "title": "JAHONGIR TRAVEL",
+      "subtitle": "O'zbekistonga yo'lingiz",
+      "description": "Tajribali mahalliy gidlar bilan Buyuk Ipak yo'lining qadimiy shaharlarini kashf eting",
+      "destination": "Yo'nalish",
+      "whereTo": "Qayerga?",
+      "travelDate": "Sayohat sanasi",
+      "guests": "Mehmonlar",
+      "numberOfGuests": "Mehmonlar soni",
+      "searchTours": "Sayohatlarni qidirish",
       "cta": "Sayohatlarni ko'rish"
     },
     "featured": {
@@ -52,7 +62,9 @@
     "itinerary": "Marshrut",
     "reviews": "Sharhlar",
     "faqs": "Savollar",
-    "day": "Kun"
+    "day": "Kun",
+    "aboutTour": "Sayohat haqida",
+    "location": "O'zbekiston"
   },
   "blog": {
     "title": "Sayohat blogi",
@@ -77,10 +89,17 @@
   },
   "footer": {
     "company": "Kompaniya",
+    "companyDescription": "O'zbekistonning Buyuk Ipak yo'li boyliklarini kashf qilish uchun ishonchli hamkoringiz.",
     "quickLinks": "Tez havolalar",
+    "allTours": "Barcha sayohatlar",
+    "aboutUs": "Biz haqimizda",
+    "popularDestinations": "Mashhur yo'nalishlar",
+    "contactUs": "Biz bilan bog'laning",
     "contact": "Aloqa",
     "followUs": "Obuna bo'ling",
-    "copyright": "Barcha huquqlar himoyalangan."
+    "copyright": "Barcha huquqlar himoyalangan.",
+    "privacyPolicy": "Maxfiylik siyosati",
+    "termsOfService": "Foydalanish shartlari"
   },
   "errors": {
     "404": "Sahifa topilmadi",

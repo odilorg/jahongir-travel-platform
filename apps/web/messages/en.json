@@ -2,9 +2,12 @@
   "navigation": {
     "home": "Home",
     "tours": "Tours",
+    "destinations": "Destinations",
     "blog": "Blog",
     "about": "About",
-    "contact": "Contact"
+    "contact": "Contact",
+    "language": "Language",
+    "tagline": "Unforgettable Cultural Immersion in Uzbekistan"
   },
   "common": {
     "home": "Home",
@@ -31,8 +34,15 @@
   },
   "home": {
     "hero": {
-      "title": "Discover Uzbekistan",
-      "subtitle": "Explore the Silk Road with expert guides",
+      "title": "JAHONGIR TRAVEL",
+      "subtitle": "Your Gateway to Uzbekistan",
+      "description": "Discover the ancient cities of the Silk Road with expert local guides",
+      "destination": "Destination",
+      "whereTo": "Where to?",
+      "travelDate": "Travel Date",
+      "guests": "Guests",
+      "numberOfGuests": "Number of guests",
+      "searchTours": "Search Tours",
       "cta": "Browse Tours"
     },
     "featured": {
@@ -52,7 +62,9 @@
     "itinerary": "Itinerary",
     "reviews": "Reviews",
     "faqs": "FAQs",
-    "day": "Day"
+    "day": "Day",
+    "aboutTour": "About This Tour",
+    "location": "Uzbekistan"
   },
   "blog": {
     "title": "Travel Blog",
@@ -77,10 +89,17 @@
   },
   "footer": {
     "company": "Company",
+    "companyDescription": "Your trusted partner for unforgettable journeys through the Silk Road treasures of Uzbekistan.",
     "quickLinks": "Quick Links",
+    "allTours": "All Tours",
+    "aboutUs": "About Us",
+    "popularDestinations": "Popular Destinations",
+    "contactUs": "Contact Us",
     "contact": "Contact",
     "followUs": "Follow Us",
-    "copyright": "All rights reserved."
+    "copyright": "All rights reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
   },
   "errors": {
     "404": "Page not found",
