@@ -25,6 +25,9 @@ export interface Tour {
   itineraryItems?: ItineraryItem[]
   reviews?: Review[]
   averageRating?: number
+  metaTitle?: string | null
+  metaDescription?: string | null
+  summary?: string | null
   _count?: {
     reviews: number
     itineraryItems: number
@@ -192,6 +195,7 @@ export interface BlogPost {
     id: string
     name: string
     avatar: string | null
+    bio: string | null
   }
   _count: {
     comments: number
