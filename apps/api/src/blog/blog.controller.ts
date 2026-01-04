@@ -14,6 +14,8 @@ import { BlogService } from './blog.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { FindAllPostsDto } from './dto/find-all-posts.dto';
+import { Locale } from '../i18n/locale.decorator';
+import { Locale as LocaleType } from '@prisma/client';
 
 @Controller('blog')
 export class BlogController {
@@ -26,14 +28,14 @@ export class BlogController {
   }
 
   @Get()
-  findAll(@Query() query: FindAllPostsDto) {
-    return this.blogService.findAll(query);
+  findAll(@Query() query: FindAllPostsDto, @Locale() locale: LocaleType) {
+    return this.blogService.findAll(query, locale);
   }
 
   @Get('featured')
-  getFeatured(@Query('limit') limit?: string) {
+  getFeatured(@Query('limit') limit?: string, @Locale() locale?: LocaleType) {
     const parsedLimit = limit ? parseInt(limit, 10) : 5;
-    return this.blogService.getFeatured(parsedLimit);
+    return this.blogService.getFeatured(parsedLimit, locale);
   }
 
   @Get('id/:id')
@@ -42,8 +44,8 @@ export class BlogController {
   }
 
   @Get(':slug')
-  findOne(@Param('slug') slug: string) {
-    return this.blogService.findOne(slug);
+  findOne(@Param('slug') slug: string, @Locale() locale: LocaleType) {
+    return this.blogService.findOne(slug, locale);
   }
 
   @Patch(':id')

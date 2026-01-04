@@ -8,7 +8,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { FindAllPostsDto } from './dto/find-all-posts.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, Locale } from '@prisma/client';
+import {
+  getTranslationWithFallback,
+  logMissingTranslation,
+  DEFAULT_LOCALE,
+} from '../i18n';
 
 @Injectable()
 export class BlogService {
@@ -26,6 +31,7 @@ export class BlogService {
             createPostDto.status === 'published' ? new Date() : null,
         },
         include: {
+          translations: true,
           category: true,
           author: {
             select: {
@@ -37,7 +43,8 @@ export class BlogService {
         },
       });
 
-      this.logger.log(`Created blog post: ${post.title} (${post.id})`);
+      const firstTranslation = post.translations[0];
+      this.logger.log(`Created blog post: ${firstTranslation?.title || post.id} (${post.id})`);
       return post;
     } catch (error) {
       if (error.code === 'P2002') {
@@ -47,7 +54,7 @@ export class BlogService {
     }
   }
 
-  async findAll(query: FindAllPostsDto) {
+  async findAll(query: FindAllPostsDto, locale: Locale = DEFAULT_LOCALE) {
     const { page = 1, limit = 20, categoryId, cityId, search, status, sortBy } = query;
 
     const where: Prisma.BlogPostWhereInput = {
@@ -55,11 +62,15 @@ export class BlogService {
       ...(categoryId && { categoryId }),
       ...(cityId && { cityId }),
       ...(search && {
-        OR: [
-          { title: { contains: search, mode: 'insensitive' } },
-          { content: { contains: search, mode: 'insensitive' } },
-          { excerpt: { contains: search, mode: 'insensitive' } },
-        ],
+        translations: {
+          some: {
+            OR: [
+              { title: { contains: search, mode: 'insensitive' } },
+              { content: { contains: search, mode: 'insensitive' } },
+              { excerpt: { contains: search, mode: 'insensitive' } },
+            ],
+          },
+        },
       }),
     };
 
@@ -88,7 +99,24 @@ export class BlogService {
         skip,
         take: limit,
         include: {
-          category: true,
+          translations: {
+            where: {
+              locale: {
+                in: [locale, DEFAULT_LOCALE],
+              },
+            },
+          },
+          category: {
+            include: {
+              translations: {
+                where: {
+                  locale: {
+                    in: [locale, DEFAULT_LOCALE],
+                  },
+                },
+              },
+            },
+          },
           author: {
             select: {
               id: true,
@@ -110,8 +138,55 @@ export class BlogService {
     const currentLimit = limit ?? 20;
     const totalPages = Math.ceil(total / currentLimit);
 
+    // Flatten translations into post objects
+    const data = posts.map((post) => {
+      const translation = getTranslationWithFallback(post.translations, locale);
+      const categoryTranslation = post.category
+        ? getTranslationWithFallback(post.category.translations, locale)
+        : null;
+
+      if (!translation) {
+        logMissingTranslation(
+          'BlogPost',
+          post.id,
+          locale,
+          post.translations.map((t) => t.locale),
+        );
+      }
+
+      return {
+        id: post.id,
+        featuredImage: post.featuredImage,
+        images: post.images,
+        status: post.status,
+        viewCount: post.viewCount,
+        publishedAt: post.publishedAt,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        // Flattened translation fields
+        title: translation?.title || '',
+        slug: translation?.slug || '',
+        excerpt: translation?.excerpt || '',
+        content: translation?.content || '',
+        metaTitle: translation?.metaTitle || null,
+        metaDescription: translation?.metaDescription || null,
+        metaKeywords: translation?.metaKeywords || null,
+        // Category with flattened translation
+        category: post.category
+          ? {
+              id: post.category.id,
+              name: categoryTranslation?.name || '',
+              slug: categoryTranslation?.slug || '',
+              description: categoryTranslation?.description || null,
+            }
+          : null,
+        author: post.author,
+        _count: post._count,
+      };
+    });
+
     return {
-      data: posts,
+      data,
       meta: {
         total,
         page: currentPage,
@@ -123,42 +198,79 @@ export class BlogService {
     };
   }
 
-  async findOne(slug: string) {
-    const post = await this.prisma.blogPost.findUnique({
+  async findOne(slug: string, locale: Locale = DEFAULT_LOCALE) {
+    // First find post by localized slug
+    const postTranslation = await this.prisma.blogPostTranslation.findFirst({
       where: { slug },
       include: {
-        category: true,
-        author: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            bio: true,
-          },
-        },
-        city: true,
-        comments: {
-          where: { isApproved: true, parentId: null },
-          orderBy: { createdAt: 'desc' },
+        post: {
           include: {
-            replies: {
-              where: { isApproved: true },
-              orderBy: { createdAt: 'asc' },
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
             },
-          },
-        },
-        _count: {
-          select: {
+            category: {
+              include: {
+                translations: {
+                  where: {
+                    locale: {
+                      in: [locale, DEFAULT_LOCALE],
+                    },
+                  },
+                },
+              },
+            },
+            author: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+                bio: true,
+              },
+            },
+            city: true,
             comments: {
-              where: { isApproved: true },
+              where: { isApproved: true, parentId: null },
+              orderBy: { createdAt: 'desc' },
+              include: {
+                replies: {
+                  where: { isApproved: true },
+                  orderBy: { createdAt: 'asc' },
+                },
+              },
+            },
+            _count: {
+              select: {
+                comments: {
+                  where: { isApproved: true },
+                },
+              },
             },
           },
         },
       },
     });
 
-    if (!post) {
+    if (!postTranslation?.post) {
       throw new NotFoundException(`Blog post with slug "${slug}" not found`);
+    }
+
+    const post = postTranslation.post;
+    const translation = getTranslationWithFallback(post.translations, locale);
+    const categoryTranslation = post.category
+      ? getTranslationWithFallback(post.category.translations, locale)
+      : null;
+
+    if (!translation) {
+      logMissingTranslation(
+        'BlogPost',
+        post.id,
+        locale,
+        post.translations.map((t) => t.locale),
+      );
     }
 
     // Increment view count
@@ -167,7 +279,37 @@ export class BlogService {
       data: { viewCount: { increment: 1 } },
     });
 
-    return post;
+    return {
+      id: post.id,
+      featuredImage: post.featuredImage,
+      images: post.images,
+      status: post.status,
+      viewCount: post.viewCount,
+      publishedAt: post.publishedAt,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      // Flattened translation fields
+      title: translation?.title || '',
+      slug: translation?.slug || '',
+      excerpt: translation?.excerpt || '',
+      content: translation?.content || '',
+      metaTitle: translation?.metaTitle || null,
+      metaDescription: translation?.metaDescription || null,
+      metaKeywords: translation?.metaKeywords || null,
+      // Category with flattened translation
+      category: post.category
+        ? {
+            id: post.category.id,
+            name: categoryTranslation?.name || '',
+            slug: categoryTranslation?.slug || '',
+            description: categoryTranslation?.description || null,
+          }
+        : null,
+      author: post.author,
+      city: post.city,
+      comments: post.comments,
+      _count: post._count,
+    };
   }
 
   async findById(id: string) {
@@ -206,6 +348,7 @@ export class BlogService {
           ...(shouldSetPublishedAt && { publishedAt: new Date() }),
         },
         include: {
+          translations: true,
           category: true,
           author: {
             select: {
@@ -217,7 +360,8 @@ export class BlogService {
         },
       });
 
-      this.logger.log(`Updated blog post: ${post.title} (${post.id})`);
+      const firstTranslation = post.translations[0];
+      this.logger.log(`Updated blog post: ${firstTranslation?.title || post.id} (${post.id})`);
       return post;
     } catch (error) {
       if (error.code === 'P2025') {
@@ -246,13 +390,30 @@ export class BlogService {
     }
   }
 
-  async getFeatured(limit: number = 5) {
-    return this.prisma.blogPost.findMany({
+  async getFeatured(limit: number = 5, locale: Locale = DEFAULT_LOCALE) {
+    const posts = await this.prisma.blogPost.findMany({
       where: { status: 'published' },
       orderBy: { viewCount: 'desc' },
       take: limit,
       include: {
-        category: true,
+        translations: {
+          where: {
+            locale: {
+              in: [locale, DEFAULT_LOCALE],
+            },
+          },
+        },
+        category: {
+          include: {
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
+            },
+          },
+        },
         author: {
           select: {
             id: true,
@@ -268,6 +429,53 @@ export class BlogService {
           },
         },
       },
+    });
+
+    // Flatten translations
+    return posts.map((post) => {
+      const translation = getTranslationWithFallback(post.translations, locale);
+      const categoryTranslation = post.category
+        ? getTranslationWithFallback(post.category.translations, locale)
+        : null;
+
+      if (!translation) {
+        logMissingTranslation(
+          'BlogPost',
+          post.id,
+          locale,
+          post.translations.map((t) => t.locale),
+        );
+      }
+
+      return {
+        id: post.id,
+        featuredImage: post.featuredImage,
+        images: post.images,
+        status: post.status,
+        viewCount: post.viewCount,
+        publishedAt: post.publishedAt,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        // Flattened translation fields
+        title: translation?.title || '',
+        slug: translation?.slug || '',
+        excerpt: translation?.excerpt || '',
+        content: translation?.content || '',
+        metaTitle: translation?.metaTitle || null,
+        metaDescription: translation?.metaDescription || null,
+        metaKeywords: translation?.metaKeywords || null,
+        // Category with flattened translation
+        category: post.category
+          ? {
+              id: post.category.id,
+              name: categoryTranslation?.name || '',
+              slug: categoryTranslation?.slug || '',
+              description: categoryTranslation?.description || null,
+            }
+          : null,
+        author: post.author,
+        _count: post._count,
+      };
     });
   }
 }
