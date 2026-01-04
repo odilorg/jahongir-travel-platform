@@ -240,7 +240,7 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-2">{t('difficulty')}</h3>
                     <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded">
-                      {tour.difficulty}
+                      {tCommon(`difficulty.${tour.difficulty}`) || tour.difficulty}
                     </span>
                   </CardContent>
                 </Card>

@@ -7,6 +7,7 @@
     "contact": "Контакты"
   },
   "common": {
+    "home": "Главная",
     "learnMore": "Узнать больше",
     "bookNow": "Забронировать",
     "readMore": "Читать далее",
@@ -20,7 +21,13 @@
     "currency": "USD",
     "perPerson": "с человека",
     "days": "дней",
-    "duration": "Длительность"
+    "duration": "Длительность",
+    "difficulty": {
+      "Easy": "Лёгкий",
+      "Moderate": "Умеренный",
+      "Challenging": "Сложный",
+      "Difficult": "Трудный"
+    }
   },
   "home": {
     "hero": {

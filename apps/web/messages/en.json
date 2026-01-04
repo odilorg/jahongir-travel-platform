@@ -7,6 +7,7 @@
     "contact": "Contact"
   },
   "common": {
+    "home": "Home",
     "learnMore": "Learn More",
     "bookNow": "Book Now",
     "readMore": "Read More",
@@ -20,7 +21,13 @@
     "currency": "USD",
     "perPerson": "per person",
     "days": "days",
-    "duration": "Duration"
+    "duration": "Duration",
+    "difficulty": {
+      "Easy": "Easy",
+      "Moderate": "Moderate",
+      "Challenging": "Challenging",
+      "Difficult": "Difficult"
+    }
   },
   "home": {
     "hero": {
