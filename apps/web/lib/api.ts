@@ -131,8 +131,7 @@ export async function getFeaturedTours(limit: number = 6, locale?: string): Prom
 
 export async function getTourBySlug(slug: string, locale?: string): Promise<Tour> {
   const searchParams = new URLSearchParams()
-  // TODO: Backend needs to support locale
-  // if (locale) searchParams.set('lang', locale)
+  if (locale) searchParams.set('lang', locale)
 
   const url = `${API_BASE_URL}/tours/${slug}?${searchParams}`
 

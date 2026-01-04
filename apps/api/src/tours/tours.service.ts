@@ -409,12 +409,14 @@ export class ToursService {
   }
 
   async findOne(slug: string, locale: Locale = DEFAULT_LOCALE) {
+    // Search by slug in ANY locale (slug might be in en, ru, or uz)
+    // Then return content in the requested locale
     const tour = await this.prisma.tour.findFirst({
       where: {
         translations: {
           some: {
             slug,
-            locale,
+            // Don't filter by locale - allow finding by any translation's slug
           },
         },
       },
