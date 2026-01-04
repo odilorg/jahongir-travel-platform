@@ -1,4 +1,17 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+// Use different URLs for server-side vs client-side requests
+// Server-side: Use HTTP to localhost (API server doesn't have SSL)
+// Client-side: Use HTTPS via nginx proxy
+const getApiBaseUrl = () => {
+  // Check if we're running on the server (Node.js)
+  if (typeof window === 'undefined') {
+    // Server-side: Use HTTP to localhost
+    return process.env.API_URL_INTERNAL || 'http://localhost:4000/api'
+  }
+  // Client-side: Use public URL (will use HTTPS if page is HTTPS)
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 export interface Tour {
   id: string
