@@ -371,6 +371,7 @@ export class ToursService {
 
     return {
       id: tour.id,
+      categoryId: tour.categoryId, // Include for admin edit form
       price: tour.price,
       duration: tour.duration,
       maxGroupSize: tour.maxGroupSize,
