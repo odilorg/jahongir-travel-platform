@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { BlogForm } from '@/components/blog/BlogForm';
+import { TranslationTabs } from '@/components/translations/TranslationTabs';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -99,6 +100,28 @@ export default function EditBlogPostPage() {
 
       {/* Form */}
       <BlogForm initialData={post} onSubmit={handleSubmit} submitting={submitting} />
+
+      {/* Translations */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold">Translations</h2>
+        <p className="text-muted-foreground">
+          Manage translations for this blog post in different languages
+        </p>
+        <TranslationTabs
+          entityType="blog"
+          entityId={id}
+          fields={[
+            { name: 'title', label: 'Title', type: 'text', required: true, placeholder: 'Blog post title' },
+            { name: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'blog-post-slug' },
+            { name: 'excerpt', label: 'Excerpt', type: 'textarea', required: true, placeholder: 'Brief excerpt' },
+            { name: 'content', label: 'Content', type: 'richtext', required: true, placeholder: 'Full blog post content' },
+            { name: 'metaTitle', label: 'Meta Title', type: 'text', placeholder: 'SEO title' },
+            { name: 'metaDescription', label: 'Meta Description', type: 'textarea', placeholder: 'SEO description' },
+            { name: 'metaKeywords', label: 'Meta Keywords', type: 'text', placeholder: 'SEO keywords (comma-separated)' },
+          ]}
+          onSaveSuccess={fetchPost}
+        />
+      </div>
     </div>
   );
 }

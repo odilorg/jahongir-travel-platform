@@ -21,6 +21,7 @@ import { UsersModule } from './users/users.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { EmailModule } from './email/email.module';
 import { HealthModule } from './health/health.module';
+import { AdminTranslationsModule } from './admin-translations/admin-translations.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { HealthModule } from './health/health.module';
     UploadsModule,
     EmailModule,
     HealthModule,
+    AdminTranslationsModule,
   ],
   controllers: [AppController],
   providers: [

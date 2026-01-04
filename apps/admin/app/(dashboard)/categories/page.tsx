@@ -14,10 +14,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Folder, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Folder, Search, Languages } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/shared';
+import { TranslationDialog } from '@/components/translations/TranslationDialog';
 
 interface Category {
   id: string;
@@ -63,6 +64,10 @@ export default function CategoriesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Translation dialog state
+  const [translationDialogOpen, setTranslationDialogOpen] = useState(false);
+  const [translatingCategory, setTranslatingCategory] = useState<Category | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -167,6 +172,11 @@ export default function CategoriesPage() {
   const openDeleteDialog = (id: string) => {
     setCategoryToDelete(id);
     setDeleteDialogOpen(true);
+  };
+
+  const openTranslationDialog = (category: Category) => {
+    setTranslatingCategory(category);
+    setTranslationDialogOpen(true);
   };
 
   const handleDelete = async () => {
@@ -280,13 +290,23 @@ export default function CategoriesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => openEditModal(category)}
+                      title="Edit category"
                     >
                       <Edit className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openTranslationDialog(category)}
+                      title="Manage translations"
+                    >
+                      <Languages className="h-3 w-3" />
                     </Button>
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => openDeleteDialog(category.id)}
+                      title="Delete category"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -424,6 +444,23 @@ export default function CategoriesPage() {
         variant="destructive"
         loading={deleting}
       />
+
+      {/* Translation Dialog */}
+      {translatingCategory && (
+        <TranslationDialog
+          open={translationDialogOpen}
+          onOpenChange={setTranslationDialogOpen}
+          entityType="categories"
+          entityId={translatingCategory.id}
+          entityName={translatingCategory.name}
+          fields={[
+            { name: 'name', label: 'Category Name', type: 'text', required: true, placeholder: 'Category name' },
+            { name: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'category-slug' },
+            { name: 'description', label: 'Description', type: 'textarea', placeholder: 'Category description' },
+          ]}
+          onSaveSuccess={fetchCategories}
+        />
+      )}
     </div>
   );
 }

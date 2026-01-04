@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { TourForm } from '@/components/tours/TourForm';
+import { TranslationTabs } from '@/components/translations/TranslationTabs';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -129,6 +130,30 @@ export default function EditTourPage() {
 
       {/* Form */}
       <TourForm initialData={tour} onSubmit={handleSubmit} submitting={submitting} />
+
+      {/* Translations */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold">Translations</h2>
+        <p className="text-muted-foreground">
+          Manage translations for this tour in different languages
+        </p>
+        <TranslationTabs
+          entityType="tours"
+          entityId={tourId}
+          fields={[
+            { name: 'title', label: 'Title', type: 'text', required: true, placeholder: 'Tour title' },
+            { name: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'tour-slug' },
+            { name: 'summary', label: 'Summary', type: 'textarea', placeholder: 'Brief tour summary' },
+            { name: 'description', label: 'Description', type: 'richtext', placeholder: 'Full tour description' },
+            { name: 'highlights', label: 'Highlight', type: 'array', placeholder: 'Tour highlight' },
+            { name: 'included', label: 'Included Item', type: 'array', placeholder: 'What\'s included' },
+            { name: 'excluded', label: 'Excluded Item', type: 'array', placeholder: 'What\'s excluded' },
+            { name: 'metaTitle', label: 'Meta Title', type: 'text', placeholder: 'SEO title' },
+            { name: 'metaDescription', label: 'Meta Description', type: 'textarea', placeholder: 'SEO description' },
+          ]}
+          onSaveSuccess={fetchTour}
+        />
+      </div>
     </div>
   );
 }
