@@ -36,6 +36,7 @@
   "tours": {
     "title": "Sayohatlar",
     "subtitle": "O'zingizga mos sarguzashtni toping",
+    "duration": "Davomiyligi",
     "difficulty": "Qiyinlik",
     "maxGroupSize": "Guruh hajmi",
     "included": "Narxga kiradi",

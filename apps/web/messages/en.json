@@ -36,6 +36,7 @@
   "tours": {
     "title": "Tours",
     "subtitle": "Find your perfect adventure",
+    "duration": "Duration",
     "difficulty": "Difficulty",
     "maxGroupSize": "Max Group Size",
     "included": "What's Included",
