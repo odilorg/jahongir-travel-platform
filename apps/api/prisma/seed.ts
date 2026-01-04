@@ -1,10 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Locale } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seeding...\n');
+  console.log('🌱 Starting i18n database seeding...\n');
 
   // ============================================================================
   // 1. USERS
@@ -31,356 +31,426 @@ async function main() {
   console.log('✓ Admin user created');
 
   // ============================================================================
-  // 2. TOUR CATEGORIES
+  // 2. TOUR CATEGORIES (with translations)
   // ============================================================================
-  console.log('\n📂 Creating tour categories...');
+  console.log('\n📂 Creating tour categories with translations...');
 
-  const culturalCategory = await prisma.tourCategory.upsert({
-    where: { slug: 'cultural-tours' },
-    update: {},
-    create: {
-      name: 'Cultural Tours',
-      slug: 'cultural-tours',
-      description: 'Explore the rich cultural heritage of Uzbekistan, from ancient Silk Road cities to traditional crafts.',
-      image: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=600&h=400&fit=crop',
+  // Cultural Tours
+  const culturalCategory = await prisma.tourCategory.create({
+    data: {
       icon: '🏛️',
+      image: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=600&h=400&fit=crop',
       order: 1,
+      isActive: true,
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            name: 'Cultural Tours',
+            slug: 'cultural-tours',
+            description: 'Explore the rich cultural heritage of Uzbekistan, from ancient Silk Road cities to traditional crafts.',
+          },
+          {
+            locale: Locale.ru,
+            name: 'Культурные туры',
+            slug: 'cultural-tours',
+            description: 'Исследуйте богатое культурное наследие Узбекистана, от древних городов Великого шёлкового пути до традиционных ремёсел.',
+          },
+          {
+            locale: Locale.uz,
+            name: 'Madaniy sayohatlar',
+            slug: 'madaniy-sayohatlar',
+            description: 'O\'zbekistonning boy madaniy merosini, qadimiy Buyuk Ipak yo\'li shaharlaridan an\'anaviy hunarmandchilikkacha o\'rganing.',
+          },
+        ],
+      },
     },
   });
 
-  const historicalCategory = await prisma.tourCategory.upsert({
-    where: { slug: 'historical-tours' },
-    update: {},
-    create: {
-      name: 'Historical Tours',
-      slug: 'historical-tours',
-      description: 'Journey through millennia of history, visiting ancient monuments and UNESCO sites.',
-      image: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=600&h=400&fit=crop',
+  // Historical Tours
+  const historicalCategory = await prisma.tourCategory.create({
+    data: {
       icon: '🕌',
+      image: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=600&h=400&fit=crop',
       order: 2,
+      isActive: true,
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            name: 'Historical Tours',
+            slug: 'historical-tours',
+            description: 'Journey through millennia of history, visiting ancient monuments and UNESCO sites.',
+          },
+          {
+            locale: Locale.ru,
+            name: 'Исторические туры',
+            slug: 'historical-tours',
+            description: 'Путешествие сквозь тысячелетия истории, посещение древних памятников и объектов ЮНЕСКО.',
+          },
+          {
+            locale: Locale.uz,
+            name: 'Tarixiy sayohatlar',
+            slug: 'tarixiy-sayohatlar',
+            description: 'Ming yillik tarix orqali sayohat qiling, qadimiy yodgorliklar va UNESCO ob\'ektlarini ziyorat qiling.',
+          },
+        ],
+      },
     },
   });
 
-  const adventureCategory = await prisma.tourCategory.upsert({
-    where: { slug: 'adventure-tours' },
-    update: {},
-    create: {
-      name: 'Adventure Tours',
-      slug: 'adventure-tours',
-      description: 'Trekking, hiking, and outdoor adventures in mountains and deserts.',
-      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop',
+  // Adventure Tours
+  const adventureCategory = await prisma.tourCategory.create({
+    data: {
       icon: '🏔️',
+      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop',
       order: 3,
+      isActive: true,
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            name: 'Adventure Tours',
+            slug: 'adventure-tours',
+            description: 'Trekking, hiking, and outdoor adventures in mountains and deserts.',
+          },
+          {
+            locale: Locale.ru,
+            name: 'Приключенческие туры',
+            slug: 'adventure-tours',
+            description: 'Треккинг, походы и приключения на свежем воздухе в горах и пустынях.',
+          },
+          {
+            locale: Locale.uz,
+            name: 'Sarguzasht sayohatlari',
+            slug: 'sarguzasht-sayohatlari',
+            description: 'Tog\'lar va cho\'llarda trekking, piyoda sayohat va ochiq havoda sarguzashtlar.',
+          },
+        ],
+      },
     },
   });
 
-  const familyCategory = await prisma.tourCategory.upsert({
-    where: { slug: 'family-tours' },
-    update: {},
-    create: {
-      name: 'Family Tours',
-      slug: 'family-tours',
-      description: 'Family-friendly tours for travelers of all ages.',
-      image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&h=400&fit=crop',
+  // Family Tours
+  const familyCategory = await prisma.tourCategory.create({
+    data: {
       icon: '👨‍👩‍👧‍👦',
+      image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&h=400&fit=crop',
       order: 4,
+      isActive: true,
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            name: 'Family Tours',
+            slug: 'family-tours',
+            description: 'Family-friendly tours for travelers of all ages.',
+          },
+          {
+            locale: Locale.ru,
+            name: 'Семейные туры',
+            slug: 'family-tours',
+            description: 'Семейные туры для путешественников всех возрастов.',
+          },
+          {
+            locale: Locale.uz,
+            name: 'Oilaviy sayohatlar',
+            slug: 'oilaviy-sayohatlar',
+            description: 'Barcha yoshdagi sayohatchilar uchun oilaviy sayohatlar.',
+          },
+        ],
+      },
     },
   });
 
-  console.log('✓ 4 tour categories created');
+  console.log('✓ 4 tour categories created with 3 languages each');
 
   // ============================================================================
-  // 3. CITIES
+  // 3. CITIES (with translations)
   // ============================================================================
-  console.log('\n🏙️ Creating cities...');
+  console.log('\n🏙️ Creating cities with translations...');
 
-  const samarkand = await prisma.city.upsert({
-    where: { slug: 'samarkand' },
-    update: {},
-    create: {
-      name: 'Samarkand',
-      slug: 'samarkand',
-      description: 'The Pearl of the East - home to stunning Islamic architecture including Registan Square.',
-      country: 'Uzbekistan',
-      latitude: 39.6542,
-      longitude: 66.9597,
-      image: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800&h=600&fit=crop',
-      images: ['https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800&h=600&fit=crop'],
+  const samarkand = await prisma.city.create({
+    data: {
+      latitude: 39.6270,
+      longitude: 66.9750,
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            name: 'Samarkand',
+            slug: 'samarkand',
+            description: 'Ancient city on the Silk Road, home to stunning Islamic architecture including Registan Square.',
+          },
+          {
+            locale: Locale.ru,
+            name: 'Самарканд',
+            slug: 'samarkand',
+            description: 'Древний город на Великом шёлковом пути, дом потрясающей исламской архитектуры, включая площадь Регистан.',
+          },
+          {
+            locale: Locale.uz,
+            name: 'Samarqand',
+            slug: 'samarqand',
+            description: 'Buyuk Ipak yo\'lidagi qadimiy shahar, Registon maydoni kabi ajoyib islom me\'morchiligining uyidir.',
+          },
+        ],
+      },
     },
   });
 
-  const bukhara = await prisma.city.upsert({
-    where: { slug: 'bukhara' },
-    update: {},
-    create: {
-      name: 'Bukhara',
-      slug: 'bukhara',
-      description: 'UNESCO World Heritage site with over 140 architectural monuments.',
-      country: 'Uzbekistan',
+  const bukhara = await prisma.city.create({
+    data: {
       latitude: 39.7747,
       longitude: 64.4286,
-      image: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&h=600&fit=crop',
-      images: [],
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            name: 'Bukhara',
+            slug: 'bukhara',
+            description: 'One of the oldest continuously inhabited cities in Central Asia, UNESCO World Heritage site.',
+          },
+          {
+            locale: Locale.ru,
+            name: 'Бухара',
+            slug: 'bukhara',
+            description: 'Один из старейших постоянно населённых городов Центральной Азии, объект Всемирного наследия ЮНЕСКО.',
+          },
+          {
+            locale: Locale.uz,
+            name: 'Buxoro',
+            slug: 'buxoro',
+            description: 'Markaziy Osiyodagi eng qadimiy doimiy aholi yashaydigan shaharlardan biri, UNESCO Jahon merosi obyekti.',
+          },
+        ],
+      },
     },
   });
 
-  const khiva = await prisma.city.upsert({
-    where: { slug: 'khiva' },
-    update: {},
-    create: {
-      name: 'Khiva',
-      slug: 'khiva',
-      description: 'Open-air museum city with perfectly preserved old town (Itchan Kala).',
-      country: 'Uzbekistan',
+  const khiva = await prisma.city.create({
+    data: {
       latitude: 41.3775,
       longitude: 60.3641,
-      image: 'https://images.unsplash.com/photo-1512690459411-b9245f6eb793?w=800&h=600&fit=crop',
-      images: [],
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            name: 'Khiva',
+            slug: 'khiva',
+            description: 'Well-preserved ancient walled city with stunning architecture and rich history.',
+          },
+          {
+            locale: Locale.ru,
+            name: 'Хива',
+            slug: 'khiva',
+            description: 'Хорошо сохранившийся древний город-крепость с потрясающей архитектурой и богатой историей.',
+          },
+          {
+            locale: Locale.uz,
+            name: 'Xiva',
+            slug: 'xiva',
+            description: 'Yaxshi saqlanib qolgan qadimiy qal\'ali shahar, ajoyib me\'morchilik va boy tarixga ega.',
+          },
+        ],
+      },
     },
   });
 
-  const tashkent = await prisma.city.upsert({
-    where: { slug: 'tashkent' },
-    update: {},
-    create: {
-      name: 'Tashkent',
-      slug: 'tashkent',
-      description: 'Capital of Uzbekistan, blending modern development with historical monuments.',
-      country: 'Uzbekistan',
+  const tashkent = await prisma.city.create({
+    data: {
       latitude: 41.2995,
       longitude: 69.2401,
-      image: 'https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800&h=600&fit=crop',
-      images: [],
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            name: 'Tashkent',
+            slug: 'tashkent',
+            description: 'Modern capital of Uzbekistan blending Soviet architecture with traditional bazaars.',
+          },
+          {
+            locale: Locale.ru,
+            name: 'Ташкент',
+            slug: 'tashkent',
+            description: 'Современная столица Узбекистана, сочетающая советскую архитектуру с традиционными базарами.',
+          },
+          {
+            locale: Locale.uz,
+            name: 'Toshkent',
+            slug: 'toshkent',
+            description: 'O\'zbekistonning zamonaviy poytaxti, sovet me\'morchiligi bilan an\'anaviy bozorlarni birlashtiradi.',
+          },
+        ],
+      },
     },
   });
 
-  console.log('✓ 4 cities created');
+  console.log('✓ 4 cities created with 3 languages each');
 
   // ============================================================================
-  // 4. TOURS
+  // 4. BLOG CATEGORIES (with translations)
   // ============================================================================
-  console.log('\n🎫 Creating tours...');
+  console.log('\n📝 Creating blog categories with translations...');
 
-  const classicTour = await prisma.tour.upsert({
-    where: { slug: 'classic-uzbekistan-7-days' },
-    update: {},
-    create: {
-      title: 'Classic Uzbekistan: 7-Day Journey',
-      slug: 'classic-uzbekistan-7-days',
-      description: 'Experience the highlights of Uzbekistan. Visit Tashkent, Samarkand, Bukhara, and Khiva. Marvel at stunning Islamic architecture, explore ancient bazaars, and immerse yourself in local culture.',
-      shortDescription: 'Discover the best of Uzbekistan in one week. From Registan Square to the Ark of Bukhara.',
-      price: 1299,
-      duration: 7,
-      maxGroupSize: 16,
-      difficulty: 'Easy',
-      categoryId: culturalCategory.id,
-      images: [
-        'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=1200&h=800&fit=crop',
-        'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&h=800&fit=crop',
-        'https://images.unsplash.com/photo-1512690459411-b9245f6eb793?w=1200&h=800&fit=crop',
-      ],
-      highlights: [
-        'Registan Square in Samarkand',
-        'Gur-e-Amir Mausoleum',
-        'Ark of Bukhara',
-        'Itchan Kala in Khiva',
-        'Traditional Uzbek cuisine',
-        'Local bazaars and handicrafts',
-      ],
-      included: [
-        'All accommodation (3-4 star hotels)',
-        'All breakfasts and some meals',
-        'Professional English-speaking guide',
-        'All entrance fees',
-        'Comfortable AC transportation',
-        'High-speed train tickets',
-      ],
-      excluded: [
-        'International flights',
-        'Visa fees',
-        'Travel insurance',
-        'Personal expenses',
-        'Tips',
-      ],
-      metaTitle: 'Classic Uzbekistan Tour - 7 Days | Jahongir Travel',
-      metaDescription: 'Explore Silk Road cities on our Classic 7-day tour. Visit Tashkent, Samarkand, Bukhara, Khiva.',
-      showPrice: true,
-      isActive: true,
-      isFeatured: true,
-      publishedAt: new Date(),
+  const travelTips = await prisma.blogCategory.create({
+    data: {
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            name: 'Travel Tips',
+            slug: 'travel-tips',
+            description: 'Essential travel tips and advice for visiting Uzbekistan',
+          },
+          {
+            locale: Locale.ru,
+            name: 'Советы путешественникам',
+            slug: 'travel-tips',
+            description: 'Важные советы и рекомендации для посещения Узбекистана',
+          },
+          {
+            locale: Locale.uz,
+            name: 'Sayohat maslahatlari',
+            slug: 'travel-tips',
+            description: 'O\'zbekistonga tashrif buyurish uchun muhim maslahatlar va tavsiyalar',
+          },
+        ],
+      },
     },
   });
 
-  const samarkandTour = await prisma.tour.upsert({
-    where: { slug: 'samarkand-highlights-3-days' },
-    update: {},
-    create: {
-      title: 'Samarkand Highlights: 3-Day Exploration',
-      slug: 'samarkand-highlights-3-days',
-      description: 'Dive deep into Samarkand history. This focused tour explores magnificent monuments at a relaxed pace.',
-      shortDescription: 'Spend 3 days exploring the Pearl of the East.',
+  console.log('✓ 1 blog category created with 3 languages');
+
+  // ============================================================================
+  // 5. SAMPLE TOUR (with translations and relations)
+  // ============================================================================
+  console.log('\n🎯 Creating sample tour with translations...');
+
+  const silkRoadTour = await prisma.tour.create({
+    data: {
       price: 549,
       duration: 3,
       maxGroupSize: 12,
       difficulty: 'Easy',
-      categoryId: historicalCategory.id,
+      categoryId: culturalCategory.id,
       images: [
         'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=1200&h=800&fit=crop',
+        'https://images.unsplash.com/photo-1548013146-72479768bada?w=1200&h=800&fit=crop',
       ],
-      highlights: [
-        'Registan Square',
-        'Shah-i-Zinda necropolis',
-        'Bibi-Khanym Mosque',
-        'Ulugh Beg Observatory',
-        'Siab Bazaar',
-      ],
-      included: [
-        '2 nights boutique hotel',
-        'Daily breakfast',
-        'Expert local guide',
-        'All entrance fees',
-        'Airport transfers',
-      ],
-      excluded: [
-        'Lunch and dinner',
-        'Personal expenses',
-        'Tips',
-      ],
+      isFeatured: true,
       showPrice: true,
       isActive: true,
-      isFeatured: true,
-      publishedAt: new Date(),
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            title: 'Ancient Silk Road Discovery',
+            slug: 'ancient-silk-road-discovery',
+            summary: 'Explore the legendary cities of Samarkand, Bukhara, and Khiva',
+            description: 'Embark on a journey through time along the ancient Silk Road...',
+            highlights: [
+              'Visit UNESCO World Heritage sites',
+              'Explore Registan Square',
+              'Traditional Uzbek cuisine',
+              'Expert local guides',
+            ],
+          },
+          {
+            locale: Locale.ru,
+            title: 'Открытие древнего Шёлкового пути',
+            slug: 'ancient-silk-road-discovery',
+            summary: 'Исследуйте легендарные города Самарканд, Бухару и Хиву',
+            description: 'Отправьтесь в путешествие во времени по древнему Шёлковому пути...',
+            highlights: [
+              'Посещение объектов Всемирного наследия ЮНЕСКО',
+              'Исследование площади Регистан',
+              'Традиционная узбекская кухня',
+              'Опытные местные гиды',
+            ],
+          },
+          {
+            locale: Locale.uz,
+            title: 'Qadimiy Ipak yo\'lini kashf etish',
+            slug: 'ancient-silk-road-discovery',
+            summary: 'Samarqand, Buxoro va Xiva afsonaviy shaharlarini o\'rganing',
+            description: 'Qadimiy Ipak yo\'li bo\'ylab vaqt ichida sayohatga chiqing...',
+            highlights: [
+              'UNESCO Jahon merosi ob\'ektlariga tashrif',
+              'Registon maydonini o\'rganish',
+              'An\'anaviy o\'zbek oshxonasi',
+              'Tajribali mahalliy ekskursiya qo\'llanmalari',
+            ],
+          },
+        ],
+      },
     },
   });
 
-  console.log('✓ 2 tours created');
+  console.log('✓ Sample tour created with 3 languages');
 
   // ============================================================================
-  // 5. ITINERARY ITEMS
+  // 6. SAMPLE BLOG POST (with translations)
   // ============================================================================
-  console.log('\n📅 Creating itineraries...');
+  console.log('\n📰 Creating sample blog post with translations...');
 
-  await prisma.itineraryItem.createMany({
-    data: [
-      {
-        tourId: classicTour.id,
-        day: 1,
-        title: 'Arrival in Tashkent',
-        description: 'Welcome to Uzbekistan! Airport transfer to hotel. Rest and prepare for city tour.',
-        activities: ['Airport transfer', 'Hotel check-in', 'Welcome briefing'],
-        meals: ['Dinner'],
-        accommodation: '4-star hotel in Tashkent',
-      },
-      {
-        tourId: classicTour.id,
-        day: 2,
-        title: 'Tashkent City Tour & Train to Samarkand',
-        description: 'Morning Tashkent tour. Visit Independence Square, Chorsu Bazaar. Afternoon train to Samarkand.',
-        activities: ['City tour', 'Bazaar visit', 'High-speed train'],
-        meals: ['Breakfast', 'Lunch'],
-        accommodation: 'Hotel in Samarkand',
-      },
-      {
-        tourId: samarkandTour.id,
-        day: 1,
-        title: 'Arrival & Registan Square',
-        description: 'Arrive in Samarkand. Afternoon visit to Registan Square. Sunset illumination.',
-        activities: ['Hotel check-in', 'Registan visit', 'Sunset photos'],
-        meals: ['Breakfast'],
-        accommodation: 'Boutique hotel',
-      },
-    ],
-  });
-
-  console.log('✓ Itinerary items created');
-
-  // ============================================================================
-  // 6. REVIEWS
-  // ============================================================================
-  console.log('\n⭐ Creating reviews...');
-
-  await prisma.review.createMany({
-    data: [
-      {
-        tourId: classicTour.id,
-        name: 'Sarah Johnson',
-        email: 'sarah.j@example.com',
-        country: 'USA',
-        rating: 5,
-        title: 'Trip of a Lifetime!',
-        comment: 'This tour exceeded all expectations. Our guide was incredibly knowledgeable. Registan Square at sunset was breathtaking!',
-        images: [],
-        isApproved: true,
-        isFeatured: true,
-      },
-      {
-        tourId: classicTour.id,
-        name: 'Marco Rossi',
-        email: 'marco.r@example.com',
-        country: 'Italy',
-        rating: 5,
-        title: 'Incredible Cultural Experience',
-        comment: 'Uzbekistan is a hidden gem! The architecture is stunning, people are welcoming. Highly recommend!',
-        images: [],
-        isApproved: true,
-        isFeatured: false,
-      },
-    ],
-  });
-
-  console.log('✓ Reviews created');
-
-  // ============================================================================
-  // 7. BLOG CATEGORIES & POSTS
-  // ============================================================================
-  console.log('\n📝 Creating blog content...');
-
-  const travelTipsCategory = await prisma.blogCategory.upsert({
-    where: { slug: 'travel-tips' },
-    update: {},
-    create: {
-      name: 'Travel Tips',
-      slug: 'travel-tips',
-      description: 'Practical advice for traveling in Uzbekistan',
-    },
-  });
-
-  await prisma.blogPost.upsert({
-    where: { slug: 'top-10-things-samarkand' },
-    update: {},
-    create: {
-      title: 'Top 10 Things to Do in Samarkand',
-      slug: 'top-10-things-samarkand',
-      excerpt: 'Discover must-see sights and hidden gems of the legendary Silk Road city.',
-      content: '<h2>Introduction</h2><p>Samarkand is a treasure trove of Islamic architecture. Here are the top experiences you shouldn\'t miss.</p>',
-      featuredImage: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=1200&h=800&fit=crop',
-      images: [],
-      categoryId: travelTipsCategory.id,
+  const blogPost = await prisma.blogPost.create({
+    data: {
+      featuredImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
       authorId: adminUser.id,
-      cityId: samarkand.id,
-      status: 'published',
+      categoryId: travelTips.id,
       publishedAt: new Date(),
+      status: 'published',
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            title: 'Top 10 Things to Do in Samarkand',
+            slug: 'top-10-things-samarkand',
+            excerpt: 'Discover the best attractions and activities in this ancient Silk Road city',
+            content: 'Samarkand is one of the oldest inhabited cities in Central Asia...',
+          },
+          {
+            locale: Locale.ru,
+            title: 'Топ-10 вещей, которые нужно сделать в Самарканде',
+            slug: 'top-10-things-samarkand',
+            excerpt: 'Откройте для себя лучшие достопримечательности и развлечения в этом древнем городе Шёлкового пути',
+            content: 'Самарканд - один из старейших населенных городов Центральной Азии...',
+          },
+          {
+            locale: Locale.uz,
+            title: 'Samarqandda qilish kerak bo\'lgan 10 ta narsa',
+            slug: 'top-10-things-samarkand',
+            excerpt: 'Bu qadimiy Ipak yo\'li shahrida eng yaxshi diqqatga sazovor joylar va tadbirlarni kashf eting',
+            content: 'Samarqand Markaziy Osiyodagi eng qadimiy aholi yashaydigan shaharlardan biridir...',
+          },
+        ],
+      },
     },
   });
 
-  console.log('✓ Blog content created');
+  console.log('✓ Sample blog post created with 3 languages');
 
-  console.log('\n✅ Database seeding completed successfully!\n');
-  console.log('📊 Summary:');
-  console.log('   • 1 Admin user');
-  console.log('   • 4 Tour categories');
-  console.log('   • 4 Cities');
-  console.log('   • 2 Tours with itineraries');
-  console.log('   • 2 Reviews');
-  console.log('   • 1 Blog category & 1 blog post');
-  console.log('\n🔑 Admin credentials:');
-  console.log('   Email: admin@jahongir-travel.uz');
-  console.log('   Password: admin123\n');
+  // ============================================================================
+  // SUMMARY
+  // ============================================================================
+  console.log('\n' + '='.repeat(60));
+  console.log('✅ Database seeding completed successfully!');
+  console.log('='.repeat(60));
+  console.log('\n📊 Created:');
+  console.log('  • 1 admin user');
+  console.log('  • 4 tour categories (12 translations total)');
+  console.log('  • 4 cities (12 translations total)');
+  console.log('  • 1 blog category (3 translations total)');
+  console.log('  • 1 sample tour (3 translations total)');
+  console.log('  • 1 blog post (3 translations total)');
+  console.log('\n🌍 Languages: EN, RU, UZ');
+  console.log('');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seeding failed:', e);
+    console.error('\n❌ Error during seeding:', e);
     process.exit(1);
   })
   .finally(async () => {

@@ -30,10 +30,13 @@ export class BookingsService {
       where: { id: createBookingDto.tourId },
       select: {
         id: true,
-        title: true,
         price: true,
         maxGroupSize: true,
         isActive: true,
+        translations: {
+          where: { locale: 'en' },
+          take: 1,
+        },
       },
     });
 
@@ -94,8 +97,11 @@ export class BookingsService {
       include: {
         tour: {
           select: {
-            title: true,
-            slug: true,
+            id: true,
+            translations: {
+              where: { locale: 'en' },
+              take: 1,
+            },
           },
         },
         guest: {
@@ -112,12 +118,14 @@ export class BookingsService {
       this.logger.error(`Failed to update guest stats: ${error.message}`);
     });
 
+    const tourTitle = tour.translations[0]?.title || 'Unknown Tour';
+
     this.logger.log(
-      `New booking created: ${booking.id} for tour ${tour.title} (Guest: ${guest.email})`,
+      `New booking created: ${booking.id} for tour ${tourTitle} (Guest: ${guest.email})`,
     );
 
     // Send email notifications (non-blocking)
-    this.sendBookingEmails(booking, tour.title).catch((error) => {
+    this.sendBookingEmails(booking, tourTitle).catch((error) => {
       this.logger.error(`Failed to send booking emails: ${error.message}`);
     });
 
@@ -126,7 +134,7 @@ export class BookingsService {
         'Your booking has been received! We will contact you shortly to confirm.',
       booking: {
         id: booking.id,
-        tourTitle: tour.title,
+        tourTitle,
         travelDate: booking.travelDate,
         numberOfPeople: booking.numberOfPeople,
         totalPrice: booking.totalPrice,
@@ -196,9 +204,11 @@ export class BookingsService {
           tour: {
             select: {
               id: true,
-              title: true,
-              slug: true,
               duration: true,
+              translations: {
+                where: { locale: 'en' },
+                take: 1,
+              },
             },
           },
           guest: {
@@ -240,11 +250,13 @@ export class BookingsService {
         tour: {
           select: {
             id: true,
-            title: true,
-            slug: true,
             price: true,
             duration: true,
             images: true,
+            translations: {
+              where: { locale: 'en' },
+              take: 1,
+            },
           },
         },
         guest: {
@@ -292,7 +304,11 @@ export class BookingsService {
       include: {
         tour: {
           select: {
-            title: true,
+            id: true,
+            translations: {
+              where: { locale: 'en' },
+              take: 1,
+            },
           },
         },
         guest: true,
@@ -312,7 +328,13 @@ export class BookingsService {
       where: { id },
       include: {
         tour: {
-          select: { title: true },
+          select: {
+            id: true,
+            translations: {
+              where: { locale: 'en' },
+              take: 1,
+            },
+          },
         },
       },
     });
@@ -330,7 +352,11 @@ export class BookingsService {
       include: {
         tour: {
           select: {
-            title: true,
+            id: true,
+            translations: {
+              where: { locale: 'en' },
+              take: 1,
+            },
           },
         },
       },
@@ -582,9 +608,11 @@ export class BookingsService {
         tour: {
           select: {
             id: true,
-            title: true,
-            slug: true,
             duration: true,
+            translations: {
+              where: { locale: 'en' },
+              take: 1,
+            },
           },
         },
         guest: {

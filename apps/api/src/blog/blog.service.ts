@@ -170,7 +170,6 @@ export class BlogService {
         content: translation?.content || '',
         metaTitle: translation?.metaTitle || null,
         metaDescription: translation?.metaDescription || null,
-        metaKeywords: translation?.metaKeywords || null,
         // Category with flattened translation
         category: post.category
           ? {
@@ -295,7 +294,6 @@ export class BlogService {
       content: translation?.content || '',
       metaTitle: translation?.metaTitle || null,
       metaDescription: translation?.metaDescription || null,
-      metaKeywords: translation?.metaKeywords || null,
       // Category with flattened translation
       category: post.category
         ? {
@@ -463,7 +461,6 @@ export class BlogService {
         content: translation?.content || '',
         metaTitle: translation?.metaTitle || null,
         metaDescription: translation?.metaDescription || null,
-        metaKeywords: translation?.metaKeywords || null,
         // Category with flattened translation
         category: post.category
           ? {

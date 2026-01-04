@@ -44,8 +44,11 @@ export class ReviewsService {
       include: {
         tour: {
           select: {
-            title: true,
-            slug: true,
+            id: true,
+            translations: {
+              where: { locale: 'en' },
+              take: 1,
+            },
           },
         },
       },

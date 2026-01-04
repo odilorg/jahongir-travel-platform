@@ -330,7 +330,6 @@ export class ToursService {
       return {
         id: item.id,
         day: item.day,
-        duration: item.duration,
         accommodation: item.accommodation,
         meals: item.meals,
         title: itemTranslation?.title || '',
@@ -537,7 +536,6 @@ export class ToursService {
       return {
         id: item.id,
         day: item.day,
-        duration: item.duration,
         accommodation: item.accommodation,
         meals: item.meals,
         title: itemTranslation?.title || '',

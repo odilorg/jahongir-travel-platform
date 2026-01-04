@@ -106,8 +106,10 @@ export class DriversService {
                 tour: {
                   select: {
                     id: true,
-                    title: true,
-                    slug: true,
+                    translations: {
+                      where: { locale: 'en' },
+                      take: 1,
+                    },
                   },
                 },
               },

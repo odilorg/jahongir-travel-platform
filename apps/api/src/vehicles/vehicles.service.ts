@@ -158,7 +158,11 @@ export class VehiclesService {
                 status: true,
                 tour: {
                   select: {
-                    title: true,
+                    id: true,
+                    translations: {
+                      where: { locale: 'en' },
+                      take: 1,
+                    },
                   },
                 },
               },
