@@ -11,15 +11,23 @@ datasource db {
 }
 
 // ============================================================================
+// ENUMS
+// ============================================================================
+
+enum Locale {
+  en
+  ru
+  uz
+}
+
+// ============================================================================
 // TOURS & CATEGORIES
 // ============================================================================
 
 model Tour {
   id              String   @id @default(cuid())
-  title           String
-  slug            String   @unique
-  description     String?  @db.Text
-  shortDescription String? @db.Text
+
+  // Non-translatable fields
   price           Decimal  @db.Decimal(10, 2)
   duration        Int      // Duration in days
   maxGroupSize    Int?
@@ -29,16 +37,8 @@ model Tour {
   categoryId      String
   category        TourCategory @relation(fields: [categoryId], references: [id])
 
-  // JSON arrays (or separate tables if preferred)
+  // Media (non-translatable)
   images          String[] // Array of image URLs
-  highlights      String[] // Tour highlights
-  included        String[] // What's included
-  excluded        String[] // What's not included
-
-  // SEO
-  metaTitle       String?
-  metaDescription String?
-  metaKeywords    String?
 
   // Pricing
   showPrice       Boolean  @default(true)
@@ -54,23 +54,53 @@ model Tour {
   publishedAt     DateTime?
 
   // Relations
+  translations    TourTranslation[]
   itineraryItems  ItineraryItem[]
   reviews         Review[]
   inquiries       TourInquiry[]
   faqs            TourFaq[]
   bookings        Booking[]
 
-  @@index([slug])
   @@index([categoryId])
   @@index([isActive])
   @@index([isFeatured])
 }
 
+model TourTranslation {
+  id              String   @id @default(cuid())
+  tourId          String
+  tour            Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  locale          Locale
+
+  // Translatable fields
+  title           String
+  slug            String
+  summary         String?  @db.Text
+  description     String?  @db.Text
+  highlights      String[] // Tour highlights
+  included        String[] // What's included
+  excluded        String[] // What's not included
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tourId, locale])
+  @@unique([locale, slug])
+  @@index([locale])
+  @@index([slug])
+  @@index([tourId])
+}
+
 model TourCategory {
   id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?  @db.Text
+
+  // Non-translatable fields
   image       String?
   icon        String?
   order       Int      @default(0)
@@ -79,10 +109,32 @@ model TourCategory {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tours       Tour[]
+  tours        Tour[]
+  translations TourCategoryTranslation[]
 
-  @@index([slug])
   @@index([order])
+}
+
+model TourCategoryTranslation {
+  id          String        @id @default(cuid())
+  categoryId  String
+  category    TourCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  locale      Locale
+
+  // Translatable fields
+  name        String
+  slug        String
+  description String?  @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([categoryId, locale])
+  @@unique([locale, slug])
+  @@index([locale])
+  @@index([slug])
+  @@index([categoryId])
 }
 
 model ItineraryItem {
@@ -90,20 +142,39 @@ model ItineraryItem {
   tourId      String
   tour        Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
 
+  // Non-translatable fields
   day         Int
-  title       String
-  description String   @db.Text
-  activities  String[] // Activities for the day
   meals       String[] // Breakfast, Lunch, Dinner
   accommodation String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  cities      City[]   @relation("CityItineraryItem")
+  cities       City[]   @relation("CityItineraryItem")
+  translations ItineraryItemTranslation[]
 
   @@index([tourId])
   @@index([day])
+}
+
+model ItineraryItemTranslation {
+  id          String        @id @default(cuid())
+  itemId      String
+  item        ItineraryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  locale      Locale
+
+  // Translatable fields
+  title       String
+  description String   @db.Text
+  activities  String[] // Activities for the day
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([itemId, locale])
+  @@index([locale])
+  @@index([itemId])
 }
 
 model TourFaq {
@@ -111,14 +182,34 @@ model TourFaq {
   tourId      String
   tour        Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
 
-  question    String
-  answer      String   @db.Text
+  // Non-translatable fields
   order       Int      @default(0)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  translations TourFaqTranslation[]
+
   @@index([tourId])
+}
+
+model TourFaqTranslation {
+  id          String   @id @default(cuid())
+  faqId       String
+  faq         TourFaq  @relation(fields: [faqId], references: [id], onDelete: Cascade)
+
+  locale      Locale
+
+  // Translatable fields
+  question    String
+  answer      String   @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([faqId, locale])
+  @@index([locale])
+  @@index([faqId])
 }
 
 // ============================================================================
@@ -127,9 +218,8 @@ model TourFaq {
 
 model City {
   id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?  @db.Text
+
+  // Non-translatable fields
   country     String   @default("Uzbekistan")
 
   // Geography
@@ -140,17 +230,38 @@ model City {
   image       String?
   images      String[]
 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  translations   CityTranslation[]
+  itineraryItems ItineraryItem[] @relation("CityItineraryItem")
+  blogPosts      BlogPost[]
+}
+
+model CityTranslation {
+  id          String   @id @default(cuid())
+  cityId      String
+  city        City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  locale      Locale
+
+  // Translatable fields
+  name        String
+  slug        String
+  description String?  @db.Text
+
   // SEO
-  metaTitle   String?
+  metaTitle       String?
   metaDescription String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  itineraryItems ItineraryItem[] @relation("CityItineraryItem")
-  blogPosts   BlogPost[]
-
+  @@unique([cityId, locale])
+  @@unique([locale, slug])
+  @@index([locale])
   @@index([slug])
+  @@index([cityId])
 }
 
 // ============================================================================
@@ -321,11 +432,8 @@ model Review {
 
 model BlogPost {
   id              String   @id @default(cuid())
-  title           String
-  slug            String   @unique
-  excerpt         String?  @db.Text
-  content         String   @db.Text
 
+  // Non-translatable fields
   // Media
   featuredImage   String?
   images          String[]
@@ -340,11 +448,6 @@ model BlogPost {
   cityId          String?
   city            City?    @relation(fields: [cityId], references: [id])
 
-  // SEO
-  metaTitle       String?
-  metaDescription String?
-  metaKeywords    String?
-
   // Status
   status          String   @default("draft") // draft, published
 
@@ -356,29 +459,76 @@ model BlogPost {
   updatedAt       DateTime @updatedAt
   publishedAt     DateTime?
 
+  translations    BlogPostTranslation[]
   comments        BlogComment[]
   tags            BlogTag[]
 
-  @@index([slug])
   @@index([categoryId])
   @@index([authorId])
   @@index([status])
   @@index([publishedAt])
 }
 
+model BlogPostTranslation {
+  id              String    @id @default(cuid())
+  postId          String
+  post            BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  locale          Locale
+
+  // Translatable fields
+  title           String
+  slug            String
+  excerpt         String?  @db.Text
+  content         String   @db.Text
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([postId, locale])
+  @@unique([locale, slug])
+  @@index([locale])
+  @@index([slug])
+  @@index([postId])
+}
+
 model BlogCategory {
   id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?  @db.Text
+
+  // Non-translatable fields
   image       String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  posts       BlogPost[]
+  posts        BlogPost[]
+  translations BlogCategoryTranslation[]
+}
 
+model BlogCategoryTranslation {
+  id          String        @id @default(cuid())
+  categoryId  String
+  category    BlogCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  locale      Locale
+
+  // Translatable fields
+  name        String
+  slug        String
+  description String?  @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([categoryId, locale])
+  @@unique([locale, slug])
+  @@index([locale])
   @@index([slug])
+  @@index([categoryId])
 }
 
 model BlogTag {

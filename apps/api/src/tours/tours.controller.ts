@@ -16,6 +16,8 @@ import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { FindAllToursDto } from './dto/find-all-tours.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Locale } from '../i18n/locale.decorator';
+import { Locale as LocaleType } from '@prisma/client';
 
 @Controller('tours')
 export class ToursController {
@@ -29,32 +31,39 @@ export class ToursController {
   }
 
   @Get()
-  findAll(@Query() query: FindAllToursDto) {
-    return this.toursService.findAll(query);
+  findAll(@Query() query: FindAllToursDto, @Locale() locale: LocaleType) {
+    return this.toursService.findAll(query, locale);
   }
 
   @Get('featured')
-  getFeaturedTours(@Query('limit') limit?: string) {
+  getFeaturedTours(
+    @Query('limit') limit?: string,
+    @Locale() locale?: LocaleType,
+  ) {
     const parsedLimit = limit ? parseInt(limit, 10) : 6;
-    return this.toursService.getFeaturedTours(parsedLimit);
+    return this.toursService.getFeaturedTours(parsedLimit, locale);
   }
 
   @Get('category/:slug')
   findByCategory(
     @Param('slug') slug: string,
     @Query() query: FindAllToursDto,
+    @Locale() locale: LocaleType,
   ) {
-    return this.toursService.findByCategory(slug, query);
+    return this.toursService.findByCategory(slug, query, locale);
   }
 
   @Get('id/:id')
-  findById(@Param('id') id: string) {
-    return this.toursService.findById(id);
+  findById(@Param('id') id: string, @Locale() locale: LocaleType) {
+    return this.toursService.findById(id, locale);
   }
 
   @Get(':slug')
-  findOne(@Param('slug') slug: string) {
-    return this.toursService.findOne(slug);
+  findOne(
+    @Param('slug') slug: string,
+    @Locale() locale: LocaleType,
+  ) {
+    return this.toursService.findOne(slug, locale);
   }
 
   @Patch(':id')

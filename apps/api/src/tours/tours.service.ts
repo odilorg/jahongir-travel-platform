@@ -8,7 +8,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { FindAllToursDto } from './dto/find-all-tours.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, Locale } from '@prisma/client';
+import {
+  getTranslationWithFallback,
+  logMissingTranslation,
+  DEFAULT_LOCALE,
+} from '../i18n';
 
 @Injectable()
 export class ToursService {
@@ -28,10 +33,12 @@ export class ToursService {
         },
         include: {
           category: true,
+          translations: true,
         },
       });
 
-      this.logger.log(`Created tour: ${tour.title} (${tour.id})`);
+      const translation = tour.translations[0];
+      this.logger.log(`Created tour: ${translation?.title || tour.id} (${tour.id})`);
       return tour;
     } catch (error) {
       if (error.code === 'P2002') {
@@ -44,7 +51,7 @@ export class ToursService {
     }
   }
 
-  async findAll(query: FindAllToursDto) {
+  async findAll(query: FindAllToursDto, locale: Locale = DEFAULT_LOCALE) {
     const { page = 1, limit = 20, categoryId, minDuration, maxDuration, minPrice, maxPrice, difficulty, search, sortBy, featured } = query;
 
     // Build where clause
@@ -58,11 +65,15 @@ export class ToursService {
       ...(difficulty && { difficulty }),
       ...(featured === 'true' && { isFeatured: true }),
       ...(search && {
-        OR: [
-          { title: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-          { shortDescription: { contains: search, mode: 'insensitive' } },
-        ],
+        translations: {
+          some: {
+            OR: [
+              { title: { contains: search, mode: 'insensitive' } },
+              { description: { contains: search, mode: 'insensitive' } },
+              { summary: { contains: search, mode: 'insensitive' } },
+            ],
+          },
+        },
       }),
     };
 
@@ -100,12 +111,22 @@ export class ToursService {
         skip,
         take: limit,
         include: {
+          translations: {
+            where: {
+              locale: {
+                in: [locale, DEFAULT_LOCALE],
+              },
+            },
+          },
           category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              icon: true,
+            include: {
+              translations: {
+                where: {
+                  locale: {
+                    in: [locale, DEFAULT_LOCALE],
+                  },
+                },
+              },
             },
           },
           _count: {
@@ -123,8 +144,60 @@ export class ToursService {
     const currentLimit = limit ?? 20;
     const totalPages = Math.ceil(total / currentLimit);
 
+    // Flatten translations into tour objects
+    const data = tours.map((tour) => {
+      const translation = getTranslationWithFallback(tour.translations, locale);
+      const categoryTranslation = getTranslationWithFallback(
+        tour.category.translations,
+        locale,
+      );
+
+      if (!translation) {
+        logMissingTranslation(
+          'Tour',
+          tour.id,
+          locale,
+          tour.translations.map((t) => t.locale),
+        );
+      }
+
+      return {
+        id: tour.id,
+        price: tour.price,
+        duration: tour.duration,
+        maxGroupSize: tour.maxGroupSize,
+        difficulty: tour.difficulty,
+        images: tour.images,
+        showPrice: tour.showPrice,
+        discountedPrice: tour.discountedPrice,
+        isActive: tour.isActive,
+        isFeatured: tour.isFeatured,
+        createdAt: tour.createdAt,
+        updatedAt: tour.updatedAt,
+        // Flattened translation fields
+        title: translation?.title || '',
+        slug: translation?.slug || '',
+        summary: translation?.summary || null,
+        description: translation?.description || '',
+        highlights: translation?.highlights || [],
+        included: translation?.included || [],
+        excluded: translation?.excluded || [],
+        metaTitle: translation?.metaTitle || null,
+        metaDescription: translation?.metaDescription || null,
+        // Category with flattened translation
+        category: {
+          id: tour.category.id,
+          icon: tour.category.icon,
+          name: categoryTranslation?.name || '',
+          slug: categoryTranslation?.slug || '',
+          description: categoryTranslation?.description || null,
+        },
+        _count: tour._count,
+      };
+    });
+
     return {
-      data: tours,
+      data,
       meta: {
         total,
         page: currentPage,
@@ -136,15 +209,49 @@ export class ToursService {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: string, locale: Locale = DEFAULT_LOCALE) {
     const tour = await this.prisma.tour.findUnique({
       where: { id },
       include: {
-        category: true,
+        translations: {
+          where: {
+            locale: {
+              in: [locale, DEFAULT_LOCALE],
+            },
+          },
+        },
+        category: {
+          include: {
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
+            },
+          },
+        },
         itineraryItems: {
           orderBy: { day: 'asc' },
           include: {
-            cities: true,
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
+            },
+            cities: {
+              include: {
+                translations: {
+                  where: {
+                    locale: {
+                      in: [locale, DEFAULT_LOCALE],
+                    },
+                  },
+                },
+              },
+            },
           },
         },
         reviews: {
@@ -154,6 +261,15 @@ export class ToursService {
         },
         faqs: {
           orderBy: { order: 'asc' },
+          include: {
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
+            },
+          },
         },
         _count: {
           select: {
@@ -179,21 +295,170 @@ export class ToursService {
       },
     });
 
+    // Flatten tour translations
+    const translation = getTranslationWithFallback(tour.translations, locale);
+    const categoryTranslation = getTranslationWithFallback(
+      tour.category.translations,
+      locale,
+    );
+
+    if (!translation) {
+      logMissingTranslation(
+        'Tour',
+        tour.id,
+        locale,
+        tour.translations.map((t) => t.locale),
+      );
+    }
+
+    // Flatten itinerary translations
+    const itineraryItems = tour.itineraryItems.map((item) => {
+      const itemTranslation = getTranslationWithFallback(
+        item.translations,
+        locale,
+      );
+
+      if (!itemTranslation) {
+        logMissingTranslation(
+          'ItineraryItem',
+          item.id,
+          locale,
+          item.translations.map((t) => t.locale),
+        );
+      }
+
+      return {
+        id: item.id,
+        day: item.day,
+        duration: item.duration,
+        accommodation: item.accommodation,
+        meals: item.meals,
+        title: itemTranslation?.title || '',
+        description: itemTranslation?.description || '',
+        cities: item.cities.map((city) => {
+          const cityTranslation = getTranslationWithFallback(
+            city.translations,
+            locale,
+          );
+          return {
+            id: city.id,
+            name: cityTranslation?.name || '',
+            slug: cityTranslation?.slug || '',
+          };
+        }),
+      };
+    });
+
+    // Flatten FAQ translations
+    const faqs = tour.faqs.map((faq) => {
+      const faqTranslation = getTranslationWithFallback(faq.translations, locale);
+
+      if (!faqTranslation) {
+        logMissingTranslation(
+          'TourFaq',
+          faq.id,
+          locale,
+          faq.translations.map((t) => t.locale),
+        );
+      }
+
+      return {
+        id: faq.id,
+        order: faq.order,
+        question: faqTranslation?.question || '',
+        answer: faqTranslation?.answer || '',
+      };
+    });
+
     return {
-      ...tour,
+      id: tour.id,
+      price: tour.price,
+      duration: tour.duration,
+      maxGroupSize: tour.maxGroupSize,
+      difficulty: tour.difficulty,
+      images: tour.images,
+      showPrice: tour.showPrice,
+      discountedPrice: tour.discountedPrice,
+      isActive: tour.isActive,
+      isFeatured: tour.isFeatured,
+      createdAt: tour.createdAt,
+      updatedAt: tour.updatedAt,
+      // Flattened translation fields
+      title: translation?.title || '',
+      slug: translation?.slug || '',
+      summary: translation?.summary || null,
+      description: translation?.description || '',
+      highlights: translation?.highlights || [],
+      included: translation?.included || [],
+      excluded: translation?.excluded || [],
+      metaTitle: translation?.metaTitle || null,
+      metaDescription: translation?.metaDescription || null,
+      // Category with flattened translation
+      category: {
+        id: tour.category.id,
+        icon: tour.category.icon,
+        name: categoryTranslation?.name || '',
+        slug: categoryTranslation?.slug || '',
+        description: categoryTranslation?.description || null,
+      },
+      itineraryItems,
+      reviews: tour.reviews,
+      faqs,
+      _count: tour._count,
       averageRating: avgRating._avg.rating ? Number(avgRating._avg.rating.toFixed(1)) : null,
     };
   }
 
-  async findOne(slug: string) {
-    const tour = await this.prisma.tour.findUnique({
-      where: { slug },
+  async findOne(slug: string, locale: Locale = DEFAULT_LOCALE) {
+    const tour = await this.prisma.tour.findFirst({
+      where: {
+        translations: {
+          some: {
+            slug,
+            locale,
+          },
+        },
+      },
       include: {
-        category: true,
+        translations: {
+          where: {
+            locale: {
+              in: [locale, DEFAULT_LOCALE],
+            },
+          },
+        },
+        category: {
+          include: {
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
+            },
+          },
+        },
         itineraryItems: {
           orderBy: { day: 'asc' },
           include: {
-            cities: true,
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
+            },
+            cities: {
+              include: {
+                translations: {
+                  where: {
+                    locale: {
+                      in: [locale, DEFAULT_LOCALE],
+                    },
+                  },
+                },
+              },
+            },
           },
         },
         reviews: {
@@ -203,6 +468,15 @@ export class ToursService {
         },
         faqs: {
           orderBy: { order: 'asc' },
+          include: {
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
+            },
+          },
         },
         _count: {
           select: {
@@ -228,22 +502,137 @@ export class ToursService {
       },
     });
 
+    // Flatten tour translations
+    const translation = getTranslationWithFallback(tour.translations, locale);
+    const categoryTranslation = getTranslationWithFallback(
+      tour.category.translations,
+      locale,
+    );
+
+    if (!translation) {
+      logMissingTranslation(
+        'Tour',
+        tour.id,
+        locale,
+        tour.translations.map((t) => t.locale),
+      );
+    }
+
+    // Flatten itinerary translations
+    const itineraryItems = tour.itineraryItems.map((item) => {
+      const itemTranslation = getTranslationWithFallback(
+        item.translations,
+        locale,
+      );
+
+      if (!itemTranslation) {
+        logMissingTranslation(
+          'ItineraryItem',
+          item.id,
+          locale,
+          item.translations.map((t) => t.locale),
+        );
+      }
+
+      return {
+        id: item.id,
+        day: item.day,
+        duration: item.duration,
+        accommodation: item.accommodation,
+        meals: item.meals,
+        title: itemTranslation?.title || '',
+        description: itemTranslation?.description || '',
+        cities: item.cities.map((city) => {
+          const cityTranslation = getTranslationWithFallback(
+            city.translations,
+            locale,
+          );
+          return {
+            id: city.id,
+            name: cityTranslation?.name || '',
+            slug: cityTranslation?.slug || '',
+          };
+        }),
+      };
+    });
+
+    // Flatten FAQ translations
+    const faqs = tour.faqs.map((faq) => {
+      const faqTranslation = getTranslationWithFallback(faq.translations, locale);
+
+      if (!faqTranslation) {
+        logMissingTranslation(
+          'TourFaq',
+          faq.id,
+          locale,
+          faq.translations.map((t) => t.locale),
+        );
+      }
+
+      return {
+        id: faq.id,
+        order: faq.order,
+        question: faqTranslation?.question || '',
+        answer: faqTranslation?.answer || '',
+      };
+    });
+
     return {
-      ...tour,
+      id: tour.id,
+      price: tour.price,
+      duration: tour.duration,
+      maxGroupSize: tour.maxGroupSize,
+      difficulty: tour.difficulty,
+      images: tour.images,
+      showPrice: tour.showPrice,
+      discountedPrice: tour.discountedPrice,
+      isActive: tour.isActive,
+      isFeatured: tour.isFeatured,
+      createdAt: tour.createdAt,
+      updatedAt: tour.updatedAt,
+      // Flattened translation fields
+      title: translation?.title || '',
+      slug: translation?.slug || '',
+      summary: translation?.summary || null,
+      description: translation?.description || '',
+      highlights: translation?.highlights || [],
+      included: translation?.included || [],
+      excluded: translation?.excluded || [],
+      metaTitle: translation?.metaTitle || null,
+      metaDescription: translation?.metaDescription || null,
+      // Category with flattened translation
+      category: {
+        id: tour.category.id,
+        icon: tour.category.icon,
+        name: categoryTranslation?.name || '',
+        slug: categoryTranslation?.slug || '',
+        description: categoryTranslation?.description || null,
+      },
+      itineraryItems,
+      reviews: tour.reviews,
+      faqs,
+      _count: tour._count,
       averageRating: avgRating._avg.rating ? Number(avgRating._avg.rating.toFixed(1)) : null,
     };
   }
 
-  async findByCategory(categorySlug: string, query: FindAllToursDto) {
-    const category = await this.prisma.tourCategory.findUnique({
-      where: { slug: categorySlug },
+  async findByCategory(categorySlug: string, query: FindAllToursDto, locale: Locale = DEFAULT_LOCALE) {
+    const category = await this.prisma.tourCategory.findFirst({
+      where: {
+        translations: {
+          some: {
+            slug: categorySlug,
+            locale,
+          },
+        },
+      },
     });
 
     if (!category) {
       throw new NotFoundException(`Category with slug "${categorySlug}" not found`);
     }
 
-    return this.findAll({ ...query, categoryId: category.id });
+    return this.findAll({ ...query, categoryId: category.id }, locale);
   }
 
   async update(id: string, updateTourDto: UpdateTourDto) {
@@ -261,10 +650,12 @@ export class ToursService {
         },
         include: {
           category: true,
+          translations: true,
         },
       });
 
-      this.logger.log(`Updated tour: ${tour.title} (${tour.id})`);
+      const translation = tour.translations[0];
+      this.logger.log(`Updated tour: ${translation?.title || tour.id} (${tour.id})`);
       return tour;
     } catch (error) {
       if (error.code === 'P2025') {
@@ -293,8 +684,8 @@ export class ToursService {
     }
   }
 
-  async getFeaturedTours(limit: number = 6) {
-    return this.prisma.tour.findMany({
+  async getFeaturedTours(limit: number = 6, locale: Locale = DEFAULT_LOCALE) {
+    const tours = await this.prisma.tour.findMany({
       where: {
         isActive: true,
         isFeatured: true,
@@ -304,11 +695,22 @@ export class ToursService {
       },
       take: limit,
       include: {
+        translations: {
+          where: {
+            locale: {
+              in: [locale, DEFAULT_LOCALE],
+            },
+          },
+        },
         category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
+          include: {
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
+            },
           },
         },
         _count: {
@@ -317,6 +719,49 @@ export class ToursService {
           },
         },
       },
+    });
+
+    // Flatten translations
+    return tours.map((tour) => {
+      const translation = getTranslationWithFallback(tour.translations, locale);
+      const categoryTranslation = getTranslationWithFallback(
+        tour.category.translations,
+        locale,
+      );
+
+      if (!translation) {
+        logMissingTranslation(
+          'Tour',
+          tour.id,
+          locale,
+          tour.translations.map((t) => t.locale),
+        );
+      }
+
+      return {
+        id: tour.id,
+        price: tour.price,
+        duration: tour.duration,
+        maxGroupSize: tour.maxGroupSize,
+        difficulty: tour.difficulty,
+        images: tour.images,
+        showPrice: tour.showPrice,
+        discountedPrice: tour.discountedPrice,
+        isFeatured: tour.isFeatured,
+        // Flattened translation fields
+        title: translation?.title || '',
+        slug: translation?.slug || '',
+        summary: translation?.summary || null,
+        description: translation?.description || '',
+        // Category with flattened translation
+        category: {
+          id: tour.category.id,
+          icon: tour.category.icon,
+          name: categoryTranslation?.name || '',
+          slug: categoryTranslation?.slug || '',
+        },
+        _count: tour._count,
+      };
     });
   }
 }
