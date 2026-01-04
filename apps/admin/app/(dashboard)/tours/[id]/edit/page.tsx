@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
 import { TourForm } from '@/components/tours/TourForm';
 import { TranslationTabs } from '@/components/translations/TranslationTabs';
 import { api } from '@/lib/api';
@@ -72,6 +72,7 @@ export default function EditTourPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [tourId, setTourId] = useState<string>(''); // Store actual ID for updates
+  const [refreshingCache, setRefreshingCache] = useState(false);
 
   useEffect(() => {
     fetchTour();
@@ -115,8 +116,12 @@ export default function EditTourPage() {
     try {
       // Use the stored tourId (actual ID) for PATCH, not the slug
       await api.patch(`/api/tours/${tourId}`, data);
+
+      // Auto-refresh cache after successful update
+      await refreshCache(false); // Silent refresh
+
       toast.success('Tour updated successfully!', {
-        description: 'Redirecting to tours list...',
+        description: 'Changes are now live on the website',
         duration: 2000,
       });
       // Small delay to let user see the success toast
@@ -127,6 +132,52 @@ export default function EditTourPage() {
       toast.error(error.message || 'Failed to update tour');
       console.error('Update tour error:', error);
       setSubmitting(false);
+    }
+  };
+
+  const refreshCache = async (showToast = true) => {
+    setRefreshingCache(true);
+    try {
+      // Get the tour slug for cache invalidation
+      const slug = tour?.slug;
+
+      // Call the web app's revalidation API
+      const webAppUrl = process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3000';
+      const revalidateSecret = process.env.NEXT_PUBLIC_REVALIDATE_SECRET || 'jahongir-travel-revalidate-2024';
+
+      const response = await fetch(`${webAppUrl}/api/revalidate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          secret: revalidateSecret,
+          type: 'tour',
+          slug: slug,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        if (showToast) {
+          toast.success('Cache refreshed!', {
+            description: 'Website now shows the latest changes',
+            duration: 3000,
+          });
+        }
+      } else {
+        throw new Error(result.message || 'Cache refresh failed');
+      }
+    } catch (error: any) {
+      console.error('Cache refresh error:', error);
+      if (showToast) {
+        toast.error('Cache refresh failed', {
+          description: 'Changes may take up to 60 seconds to appear',
+        });
+      }
+    } finally {
+      setRefreshingCache(false);
     }
   };
 
@@ -145,16 +196,27 @@ export default function EditTourPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
-          <Link href="/tours">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Edit Tour</h1>
-          <p className="text-muted-foreground mt-1">{tour.title}</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" asChild>
+            <Link href="/tours">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Edit Tour</h1>
+            <p className="text-muted-foreground mt-1">{tour.title}</p>
+          </div>
         </div>
+        <Button
+          variant="outline"
+          onClick={() => refreshCache(true)}
+          disabled={refreshingCache}
+          className="gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshingCache ? 'animate-spin' : ''}`} />
+          {refreshingCache ? 'Refreshing...' : 'Refresh Website Cache'}
+        </Button>
       </div>
 
       {/* Form */}
