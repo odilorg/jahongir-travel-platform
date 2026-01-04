@@ -32,6 +32,19 @@
   --brand-navy-foreground: 0 0% 100%;
   --brand-cream: 45 100% 89%; /* #FEF3C7 Form backgrounds */
   --brand-cream-foreground: 222.2 47.4% 11.2%;
+
+  /* Uzbekistan Brand Accent Colors - Registan Inspired */
+  --brand-turquoise: 174 58% 40%; /* #14B8A6 Registan Turquoise */
+  --brand-turquoise-light: 174 58% 95%; /* Light turquoise bg */
+  --brand-turquoise-foreground: 0 0% 100%;
+  --brand-gold: 43 74% 66%; /* #E7C16F Silk Road Sand/Gold */
+  --brand-gold-light: 43 74% 95%; /* Light gold bg */
+  --brand-gold-foreground: 222.2 47.4% 11.2%;
+
+  /* Surface colors for visual rhythm */
+  --surface: 0 0% 100%;
+  --surface-2: 220 14% 97%; /* #F7F8FA subtle alt background */
+  --surface-elevated: 0 0% 100%;
 }
 
 @layer base {
@@ -62,4 +75,143 @@
 }
 .text-brand-cream {
   color: hsl(var(--brand-cream));
+}
+
+/* Registan Turquoise - Brand Accent */
+.bg-brand-turquoise {
+  background-color: hsl(var(--brand-turquoise));
+}
+.text-brand-turquoise {
+  color: hsl(var(--brand-turquoise));
+}
+.bg-brand-turquoise-light {
+  background-color: hsl(var(--brand-turquoise-light));
+}
+.border-brand-turquoise {
+  border-color: hsl(var(--brand-turquoise));
+}
+.ring-brand-turquoise {
+  --tw-ring-color: hsl(var(--brand-turquoise));
+}
+
+/* Silk Road Gold - Warm Secondary */
+.bg-brand-gold {
+  background-color: hsl(var(--brand-gold));
+}
+.text-brand-gold {
+  color: hsl(var(--brand-gold));
+}
+.bg-brand-gold-light {
+  background-color: hsl(var(--brand-gold-light));
+}
+.border-brand-gold {
+  border-color: hsl(var(--brand-gold));
+}
+
+/* Surface colors */
+.bg-surface {
+  background-color: hsl(var(--surface));
+}
+.bg-surface-2 {
+  background-color: hsl(var(--surface-2));
+}
+
+/* Section accent bar */
+.section-accent {
+  position: relative;
+  padding-left: 1rem;
+}
+.section-accent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, hsl(var(--brand-turquoise)), hsl(var(--brand-gold)));
+  border-radius: 2px;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar but keep functionality for nav */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll fade hint for horizontal scroll */
+.scroll-fade-right {
+  position: relative;
+}
+.scroll-fade-right::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  background: linear-gradient(to right, transparent, hsl(var(--background)));
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Mobile CTA spacer */
+.mobile-cta-spacer {
+  height: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Focus visible ring */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--brand-turquoise));
+}
+
+/* Skeleton loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--surface-2)) 50%, hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Button transitions */
+.btn-hover {
+  transition: all 150ms ease-in-out;
+}
+.btn-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.btn-hover:active {
+  transform: translateY(0);
+}
+
+/* Underline tab animation */
+.tab-underline {
+  position: relative;
+}
+.tab-underline::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: hsl(var(--brand-turquoise));
+  transform: scaleX(0);
+  transition: transform 200ms ease-out;
+}
+.tab-underline.active::after,
+.tab-underline:hover::after {
+  transform: scaleX(1);
 }
