@@ -70,6 +70,7 @@ export async function getTours(params?: {
   limit?: number
   categoryId?: string
   featured?: string
+  locale?: string
 }): Promise<PaginatedResponse<Tour>> {
   const searchParams = new URLSearchParams()
 
@@ -77,6 +78,7 @@ export async function getTours(params?: {
   if (params?.limit) searchParams.set('limit', params.limit.toString())
   if (params?.categoryId) searchParams.set('categoryId', params.categoryId)
   if (params?.featured) searchParams.set('featured', params.featured)
+  if (params?.locale) searchParams.set('lang', params.locale)
 
   const url = `${API_BASE_URL}/tours?${searchParams}`
 
@@ -91,8 +93,12 @@ export async function getTours(params?: {
   return res.json()
 }
 
-export async function getFeaturedTours(limit: number = 6): Promise<Tour[]> {
-  const url = `${API_BASE_URL}/tours/featured?limit=${limit}`
+export async function getFeaturedTours(limit: number = 6, locale?: string): Promise<Tour[]> {
+  const searchParams = new URLSearchParams()
+  searchParams.set('limit', limit.toString())
+  if (locale) searchParams.set('lang', locale)
+
+  const url = `${API_BASE_URL}/tours/featured?${searchParams}`
 
   const res = await fetch(url, {
     next: { revalidate: 60 }
@@ -105,8 +111,11 @@ export async function getFeaturedTours(limit: number = 6): Promise<Tour[]> {
   return res.json()
 }
 
-export async function getTourBySlug(slug: string): Promise<Tour> {
-  const url = `${API_BASE_URL}/tours/${slug}`
+export async function getTourBySlug(slug: string, locale?: string): Promise<Tour> {
+  const searchParams = new URLSearchParams()
+  if (locale) searchParams.set('lang', locale)
+
+  const url = `${API_BASE_URL}/tours/${slug}?${searchParams}`
 
   const res = await fetch(url, {
     next: { revalidate: 60 }
@@ -133,10 +142,12 @@ export interface Category {
 
 export async function getCategories(params?: {
   limit?: number
+  locale?: string
 }): Promise<Category[]> {
   const searchParams = new URLSearchParams()
 
   if (params?.limit) searchParams.set('limit', params.limit.toString())
+  if (params?.locale) searchParams.set('lang', params.locale)
 
   const url = `${API_BASE_URL}/categories?${searchParams}`
 
