@@ -49,8 +49,11 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
   const [showStickyNav, setShowStickyNav] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [sidebarShouldStop, setSidebarShouldStop] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Intersection observer for sticky nav
   useEffect(() => {
@@ -91,6 +94,23 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
     return () => observer.disconnect();
   }, []);
 
+  // Observer to stop sidebar sticky before footer
+  useEffect(() => {
+    const footer = footerRef.current;
+    const sidebar = sidebarRef.current;
+    if (!footer || !sidebar) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setSidebarShouldStop(entry.isIntersecting);
+      },
+      { threshold: 0, rootMargin: '0px 0px -200px 0px' }
+    );
+
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
+
   const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -123,11 +143,31 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1 py-3" ref={navRef}>
-            {availableSections.map(({ id, key }) => (
+          <nav
+            className="hidden md:flex items-center gap-1 py-3"
+            ref={navRef}
+            role="tablist"
+            aria-label={t('sectionNavigation') || 'Section navigation'}
+          >
+            {availableSections.map(({ id, key }, index) => (
               <button
                 key={id}
                 onClick={() => scrollToSection(id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const nextIndex = (index + 1) % availableSections.length;
+                    scrollToSection(availableSections[nextIndex].id);
+                  } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    const prevIndex = index === 0 ? availableSections.length - 1 : index - 1;
+                    scrollToSection(availableSections[prevIndex].id);
+                  }
+                }}
+                role="tab"
+                aria-selected={activeSection === id}
+                aria-current={activeSection === id ? 'true' : undefined}
+                tabIndex={activeSection === id ? 0 : -1}
                 className={cn(
                   "px-4 py-2 text-sm font-medium rounded-lg transition-all focus-ring",
                   activeSection === id
@@ -142,22 +182,29 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
 
           {/* Mobile Nav - Horizontal Scroll */}
           <div className="md:hidden relative scroll-fade-right">
-            <nav className="flex items-center gap-2 py-3 overflow-x-auto scrollbar-hide">
+            <nav
+              className="flex items-center gap-2 py-3 overflow-x-auto scrollbar-hide"
+              role="tablist"
+              aria-label={t('sectionNavigation') || 'Section navigation'}
+            >
               {availableSections.map(({ id, key }) => (
                 <button
                   key={id}
                   onClick={() => scrollToSection(id)}
+                  role="tab"
+                  aria-selected={activeSection === id}
+                  aria-current={activeSection === id ? 'true' : undefined}
                   className={cn(
-                    "px-3 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-all flex-shrink-0",
+                    "px-3 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-all flex-shrink-0 min-h-[44px] min-w-[44px]",
                     activeSection === id
                       ? "bg-brand-turquoise text-white"
-                      : "bg-gray-100 text-gray-600"
+                      : "bg-gray-100 text-gray-600 active:bg-gray-200"
                   )}
                 >
                   {t(key)}
                 </button>
               ))}
-              <div className="w-8 flex-shrink-0" /> {/* Spacer for fade */}
+              <div className="w-8 flex-shrink-0" aria-hidden="true" /> {/* Spacer for fade */}
             </nav>
           </div>
         </div>
@@ -362,6 +409,8 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
                     meals: t('meals') || 'Meals',
                     viewDetails: t('viewDetails') || 'View Details',
                     hideDetails: t('hideDetails') || 'Hide Details',
+                    tapToExpand: t('tapToExpand'),
+                    tapToCollapse: t('tapToCollapse'),
                   }}
                 />
               </section>
@@ -422,8 +471,11 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
           </div>
 
           {/* Sidebar - Sticky Booking Card */}
-          <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-32 space-y-4">
+          <div className="lg:col-span-1" ref={sidebarRef}>
+            <div className={cn(
+              "space-y-4 transition-all",
+              sidebarShouldStop ? "lg:relative" : "lg:sticky lg:top-32"
+            )}>
               {/* Main Booking Card */}
               <Card className="border-0 shadow-lg overflow-hidden">
                 <div className="h-1 bg-gradient-to-r from-brand-turquoise to-brand-gold" />
@@ -491,21 +543,26 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
             </div>
           </div>
         </div>
+
+        {/* Footer sentinel for sidebar sticky stop */}
+        <div ref={footerRef} className="h-px" aria-hidden="true" />
       </div>
 
       {/* Mobile Sticky CTA */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg safe-area-bottom">
-        <div className="flex items-center gap-3 p-4">
-          <div className="flex-1">
+        <div className="flex items-center gap-3 p-4 max-w-7xl mx-auto">
+          <div className="flex-1 min-w-0">
             <p className="text-xs text-muted-foreground">{t('from')}</p>
-            <p className="text-xl font-bold text-brand-turquoise">
+            <p className="text-xl font-bold text-brand-turquoise truncate">
               ${typeof tour.price === 'string' ? tour.price : tour.price.toString()}
               <span className="text-xs font-normal text-muted-foreground ml-1">/{tCommon('perPerson')}</span>
             </p>
           </div>
           <Button
             size="lg"
-            className="bg-brand-turquoise hover:bg-brand-turquoise/90 text-white font-semibold px-6 btn-hover"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="bg-brand-turquoise hover:bg-brand-turquoise/90 text-white font-semibold px-6 btn-hover min-h-[48px]"
+            aria-label={tCommon('bookNow')}
           >
             {tCommon('bookNow')}
           </Button>

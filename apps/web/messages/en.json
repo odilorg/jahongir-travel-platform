@@ -77,7 +77,10 @@
     "replyTime": "We reply within 15 minutes",
     "securePayment": "Secure payment",
     "freeConsultation": "Free consultation",
-    "whatToBring": "What to bring"
+    "whatToBring": "What to bring",
+    "sectionNavigation": "Section navigation",
+    "tapToExpand": "Tap each day to expand details",
+    "tapToCollapse": "Tap each day to collapse details"
   },
   "blog": {
     "title": "Travel Blog",

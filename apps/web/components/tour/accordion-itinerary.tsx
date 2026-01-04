@@ -41,6 +41,8 @@ interface AccordionItineraryProps {
     meals: string;
     viewDetails: string;
     hideDetails: string;
+    tapToExpand?: string;
+    tapToCollapse?: string;
   };
 }
 
@@ -372,7 +374,10 @@ export function AccordionItinerary({ items, translations }: AccordionItineraryPr
       {/* Bottom Navigation Hint */}
       <div className="mt-4 sm:mt-6 text-center">
         <p className="text-xs sm:text-sm text-gray-400">
-          Tap each day to {expandedDays.size > 0 ? 'collapse' : 'expand'} details
+          {expandedDays.size > 0
+            ? (translations.tapToCollapse || 'Tap each day to collapse details')
+            : (translations.tapToExpand || 'Tap each day to expand details')
+          }
         </p>
       </div>
     </div>

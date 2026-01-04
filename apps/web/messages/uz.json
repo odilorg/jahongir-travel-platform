@@ -77,7 +77,10 @@
     "replyTime": "15 daqiqada javob beramiz",
     "securePayment": "Xavfsiz to'lov",
     "freeConsultation": "Bepul konsultatsiya",
-    "whatToBring": "Nima olish kerak"
+    "whatToBring": "Nima olish kerak",
+    "sectionNavigation": "Bo'limlar navigatsiyasi",
+    "tapToExpand": "Tafsilotlar uchun kunga bosing",
+    "tapToCollapse": "Yopish uchun kunga bosing"
   },
   "blog": {
     "title": "Sayohat blogi",
