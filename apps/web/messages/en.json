@@ -1,0 +1,82 @@
+{
+  "navigation": {
+    "home": "Home",
+    "tours": "Tours",
+    "blog": "Blog",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "common": {
+    "learnMore": "Learn More",
+    "bookNow": "Book Now",
+    "readMore": "Read More",
+    "viewAll": "View All",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "noResults": "No results found",
+    "currency": "USD",
+    "perPerson": "per person",
+    "days": "days",
+    "duration": "Duration"
+  },
+  "home": {
+    "hero": {
+      "title": "Discover Uzbekistan",
+      "subtitle": "Explore the Silk Road with expert guides",
+      "cta": "Browse Tours"
+    },
+    "featured": {
+      "title": "Featured Tours",
+      "subtitle": "Hand-picked experiences for unforgettable adventures"
+    }
+  },
+  "tours": {
+    "title": "Tours",
+    "subtitle": "Find your perfect adventure",
+    "difficulty": "Difficulty",
+    "maxGroupSize": "Max Group Size",
+    "included": "What's Included",
+    "excluded": "Not Included",
+    "highlights": "Highlights",
+    "itinerary": "Itinerary",
+    "reviews": "Reviews",
+    "faqs": "FAQs",
+    "day": "Day"
+  },
+  "blog": {
+    "title": "Travel Blog",
+    "subtitle": "Stories, tips, and insights from Uzbekistan",
+    "readTime": "min read",
+    "category": "Category",
+    "relatedPosts": "Related Posts"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Get in touch with our team",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send Message",
+    "success": "Message sent successfully!",
+    "error": "Failed to send message. Please try again."
+  },
+  "about": {
+    "title": "About Us",
+    "subtitle": "Your trusted travel partner in Uzbekistan"
+  },
+  "footer": {
+    "company": "Company",
+    "quickLinks": "Quick Links",
+    "contact": "Contact",
+    "followUs": "Follow Us",
+    "copyright": "All rights reserved."
+  },
+  "errors": {
+    "404": "Page not found",
+    "500": "Internal server error",
+    "network": "Network error. Please check your connection."
+  }
+}

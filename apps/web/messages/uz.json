@@ -1,0 +1,82 @@
+{
+  "navigation": {
+    "home": "Bosh sahifa",
+    "tours": "Sayohatlar",
+    "blog": "Blog",
+    "about": "Biz haqimizda",
+    "contact": "Aloqa"
+  },
+  "common": {
+    "learnMore": "Batafsil",
+    "bookNow": "Buyurtma berish",
+    "readMore": "Davomini o'qish",
+    "viewAll": "Barchasini ko'rish",
+    "search": "Qidirish",
+    "filter": "Filtr",
+    "sort": "Saralash",
+    "loading": "Yuklanmoqda...",
+    "error": "Xatolik yuz berdi",
+    "noResults": "Natija topilmadi",
+    "currency": "USD",
+    "perPerson": "kishi uchun",
+    "days": "kun",
+    "duration": "Davomiyligi"
+  },
+  "home": {
+    "hero": {
+      "title": "O'zbekistonni kashf eting",
+      "subtitle": "Tajribali gidlar bilan Buyuk Ipak yo'lini o'rganing",
+      "cta": "Sayohatlarni ko'rish"
+    },
+    "featured": {
+      "title": "Tanlangan sayohatlar",
+      "subtitle": "Unutilmas sarguzashtlar uchun tanlangan tajribalar"
+    }
+  },
+  "tours": {
+    "title": "Sayohatlar",
+    "subtitle": "O'zingizga mos sarguzashtni toping",
+    "difficulty": "Qiyinlik",
+    "maxGroupSize": "Guruh hajmi",
+    "included": "Narxga kiradi",
+    "excluded": "Narxga kirmaydi",
+    "highlights": "Xususiyatlar",
+    "itinerary": "Marshrut",
+    "reviews": "Sharhlar",
+    "faqs": "Savollar",
+    "day": "Kun"
+  },
+  "blog": {
+    "title": "Sayohat blogi",
+    "subtitle": "O'zbekistondan hikoyalar, maslahatlar va taassurotlar",
+    "readTime": "daqiqa",
+    "category": "Kategoriya",
+    "relatedPosts": "O'xshash maqolalar"
+  },
+  "contact": {
+    "title": "Biz bilan bog'laning",
+    "subtitle": "Jamoamizga yozing",
+    "name": "Ism",
+    "email": "Email",
+    "message": "Xabar",
+    "send": "Yuborish",
+    "success": "Xabar muvaffaqiyatli yuborildi!",
+    "error": "Xabar yuborib bo'lmadi. Qayta urinib ko'ring."
+  },
+  "about": {
+    "title": "Biz haqimizda",
+    "subtitle": "O'zbekistondagi ishonchli sayohat hamkoringiz"
+  },
+  "footer": {
+    "company": "Kompaniya",
+    "quickLinks": "Tez havolalar",
+    "contact": "Aloqa",
+    "followUs": "Obuna bo'ling",
+    "copyright": "Barcha huquqlar himoyalangan."
+  },
+  "errors": {
+    "404": "Sahifa topilmadi",
+    "500": "Ichki server xatosi",
+    "network": "Tarmoq xatosi. Ulanishni tekshiring."
+  }
+}
