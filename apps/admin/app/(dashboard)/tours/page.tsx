@@ -24,6 +24,8 @@ import {
   Clock,
   DollarSign,
   Users,
+  Eye,
+  ExternalLink,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -305,6 +307,22 @@ export default function ToursPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2 mt-5 pt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 border-0 hover:bg-gray-100 transition-colors"
+                    asChild
+                  >
+                    <a
+                      href={`${process.env.NEXT_PUBLIC_WEB_URL || 'http://62.72.22.205:3010'}/en/tours/${tour.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Eye className="h-4 w-4 mr-1.5" />
+                      View
+                      <ExternalLink className="h-3 w-3 ml-1 opacity-50" />
+                    </a>
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"

@@ -14,7 +14,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, Plane, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string()
+    .trim()
+    .min(1, 'Email is required')
+    .email('Invalid email address'),
 });
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;

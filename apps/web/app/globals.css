@@ -3,79 +3,63 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #4A90E2; /* Primary Blue from staging */
-  --primary-foreground: #f8fafc;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #1e293b;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #1e293b;
-  --destructive: #ef4444;
-  --destructive-foreground: #f8fafc;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #4A90E2;
+  /* Colors in HSL format (required by Tailwind config) */
+  --background: 0 0% 100%;
+  --foreground: 222.2 47.4% 11.2%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 47.4% 11.2%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 47.4% 11.2%;
+  --primary: 213 72% 59%; /* Primary Blue #4A90E2 */
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 213 72% 59%;
   --radius: 0.5rem;
 
-  /* Brand Colors from staging.jahongir-travel.uz */
-  --brand-orange: #FF6B35; /* CTA buttons */
-  --brand-orange-foreground: #ffffff;
-  --brand-navy: #2C3E50; /* Footer, dark sections */
-  --brand-navy-foreground: #ffffff;
-  --brand-cream: #FEF3C7; /* Form backgrounds */
-  --brand-cream-foreground: #1e293b;
+  /* Brand Colors */
+  --brand-orange: 16 100% 60%; /* #FF6B35 CTA buttons */
+  --brand-orange-foreground: 0 0% 100%;
+  --brand-navy: 210 30% 24%; /* #2C3E50 Footer */
+  --brand-navy-foreground: 0 0% 100%;
+  --brand-cream: 45 100% 89%; /* #FEF3C7 Form backgrounds */
+  --brand-cream-foreground: 222.2 47.4% 11.2%;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-
-  /* Brand colors */
-  --color-brand-orange: var(--brand-orange);
-  --color-brand-orange-foreground: var(--brand-orange-foreground);
-  --color-brand-navy: var(--brand-navy);
-  --color-brand-navy-foreground: var(--brand-navy-foreground);
-  --color-brand-cream: var(--brand-cream);
-  --color-brand-cream-foreground: var(--brand-cream-foreground);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-    --card: #1e293b;
-    --card-foreground: #f8fafc;
-    --primary: #3b82f6;
-    --primary-foreground: #0f172a;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+/* Brand color utilities */
+.bg-brand-navy {
+  background-color: hsl(var(--brand-navy));
+}
+.text-brand-navy {
+  color: hsl(var(--brand-navy));
+}
+.bg-brand-orange {
+  background-color: hsl(var(--brand-orange));
+}
+.text-brand-orange {
+  color: hsl(var(--brand-orange));
+}
+.bg-brand-cream {
+  background-color: hsl(var(--brand-cream));
+}
+.text-brand-cream {
+  color: hsl(var(--brand-cream));
 }

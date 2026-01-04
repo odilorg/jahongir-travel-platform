@@ -122,7 +122,7 @@ export function ToursClient({ initialTours, categories, locale }: ToursClientPro
   const FiltersSection = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="font-semibold text-lg mb-4">{tCommon('filter')}</h3>
+        <h3 className="font-semibold text-lg mb-4 text-gray-900">{tCommon('filter')}</h3>
         <div className="space-y-3">
           {categories.map((category) => (
             <div key={category.id} className="flex items-center space-x-2">
@@ -133,7 +133,7 @@ export function ToursClient({ initialTours, categories, locale }: ToursClientPro
               />
               <label
                 htmlFor={category.id}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-gray-700"
               >
                 {category.name}
                 {category._count && (
@@ -146,7 +146,7 @@ export function ToursClient({ initialTours, categories, locale }: ToursClientPro
       </div>
 
       <div className="border-t pt-6">
-        <h3 className="font-semibold text-lg mb-4">Price Range ({tCommon('currency')})</h3>
+        <h3 className="font-semibold text-lg mb-4 text-gray-900">Price Range ({tCommon('currency')})</h3>
         <div className="grid grid-cols-2 gap-2">
           <Input
             type="number"
@@ -166,7 +166,7 @@ export function ToursClient({ initialTours, categories, locale }: ToursClientPro
       </div>
 
       <div className="border-t pt-6">
-        <h3 className="font-semibold text-lg mb-4">{t('duration')} ({tCommon('days')})</h3>
+        <h3 className="font-semibold text-lg mb-4 text-gray-900">{t('duration')} ({tCommon('days')})</h3>
         <div className="grid grid-cols-2 gap-2">
           <Input
             type="number"
@@ -246,7 +246,7 @@ export function ToursClient({ initialTours, categories, locale }: ToursClientPro
           {/* Filters Sidebar */}
           <aside className={`lg:col-span-1 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
             <div className="bg-white rounded-lg p-6 sticky top-24">
-              <h2 className="text-xl font-bold mb-6">{tCommon('filter')}</h2>
+              <h2 className="text-xl font-bold mb-6 text-gray-900">{tCommon('filter')}</h2>
               <FiltersSection />
             </div>
           </aside>

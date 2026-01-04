@@ -13,58 +13,135 @@ import {
 import { AdminTranslationsService } from './admin-translations.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Locale } from '@prisma/client';
+import { IsString, IsOptional, IsArray } from 'class-validator';
 
 // DTOs for translation updates
 class TourTranslationDto {
+  @IsString()
   title: string;
+
+  @IsString()
   slug: string;
+
+  @IsOptional()
+  @IsString()
   summary?: string;
+
+  @IsString()
   description: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   highlights?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   included?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   excluded?: string[];
+
+  @IsOptional()
+  @IsString()
   metaTitle?: string;
+
+  @IsOptional()
+  @IsString()
   metaDescription?: string;
 }
 
 class BlogPostTranslationDto {
+  @IsString()
   title: string;
+
+  @IsString()
   slug: string;
+
+  @IsString()
   excerpt: string;
+
+  @IsString()
   content: string;
+
+  @IsOptional()
+  @IsString()
   metaTitle?: string;
+
+  @IsOptional()
+  @IsString()
   metaDescription?: string;
+
+  @IsOptional()
+  @IsString()
   metaKeywords?: string;
 }
 
 class CategoryTranslationDto {
+  @IsString()
   name: string;
+
+  @IsString()
   slug: string;
+
+  @IsOptional()
+  @IsString()
   description?: string;
 }
 
 class CityTranslationDto {
+  @IsString()
   name: string;
+
+  @IsString()
   slug: string;
+
+  @IsOptional()
+  @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
   metaTitle?: string;
+
+  @IsOptional()
+  @IsString()
   metaDescription?: string;
 }
 
 class ItineraryItemTranslationDto {
+  @IsString()
   title: string;
+
+  @IsString()
   description: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   activities?: string[];
 }
 
 class TourFaqTranslationDto {
+  @IsString()
   question: string;
+
+  @IsString()
   answer: string;
 }
 
 class BlogCategoryTranslationDto {
+  @IsString()
   name: string;
+
+  @IsString()
   slug: string;
+
+  @IsOptional()
+  @IsString()
   description?: string;
 }
 

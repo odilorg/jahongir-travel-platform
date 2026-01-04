@@ -22,8 +22,10 @@ async function bootstrap() {
       'http://localhost:3002', // Web app (alternate port)
       'http://localhost:3003', // Web app (alternate port)
       'http://localhost:3004', // Admin app (alternate port)
-      'http://dev.jahongir-travel.uz:3010', // Web app (VPS)
-      'http://dev.jahongir-travel.uz:3011', // Admin app (VPS)
+      'http://dev.jahongir-travel.uz:3010', // Web app (VPS domain)
+      'http://dev.jahongir-travel.uz:3011', // Admin app (VPS domain)
+      'http://62.72.22.205:3010', // Web app (VPS IP)
+      'http://62.72.22.205:3011', // Admin app (VPS IP)
       process.env.WEB_URL,
       process.env.ADMIN_URL,
     ].filter((url): url is string => typeof url === 'string'),
