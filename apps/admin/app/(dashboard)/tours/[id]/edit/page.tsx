@@ -115,7 +115,7 @@ export default function EditTourPage() {
     setSubmitting(true);
     try {
       // Use the stored tourId (actual ID) for PATCH, not the slug
-      await api.patch(`/api/tours/${tourId}`, data);
+      await api.patch(`/tours/${tourId}`, data);
 
       // Auto-refresh cache after successful update
       await refreshCache(false); // Silent refresh

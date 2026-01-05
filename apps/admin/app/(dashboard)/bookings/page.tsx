@@ -173,7 +173,7 @@ export default function BookingsPage() {
       params.set('limit', '10');
       if (status) params.set('status', status);
 
-      const response = await api.get<BookingsResponse>(`/api/bookings?${params.toString()}`);
+      const response = await api.get<BookingsResponse>(`/bookings?${params.toString()}`);
       setBookings(response.data);
       setMeta(response.meta);
     } catch (error: any) {
@@ -195,7 +195,7 @@ export default function BookingsPage() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await api.patch(`/api/bookings/${id}/status`, { status });
+      await api.patch(`/bookings/${id}/status`, { status });
       toast.success(`Booking ${status}`);
       fetchBookings();
       fetchStats();
@@ -206,7 +206,7 @@ export default function BookingsPage() {
 
   const updatePayment = async (id: string, paymentStatus: string) => {
     try {
-      await api.patch(`/api/bookings/${id}/payment`, { paymentStatus });
+      await api.patch(`/bookings/${id}/payment`, { paymentStatus });
       toast.success(`Payment status updated to ${paymentStatus}`);
       fetchBookings();
     } catch (error: any) {
@@ -216,7 +216,7 @@ export default function BookingsPage() {
 
   const updateBooking = async (id: string, data: { travelDate?: string; numberOfPeople?: number; specialRequests?: string }) => {
     try {
-      await api.patch(`/api/bookings/${id}`, data);
+      await api.patch(`/bookings/${id}`, data);
       toast.success('Booking updated successfully');
       fetchBookings();
       fetchStats();
@@ -229,7 +229,7 @@ export default function BookingsPage() {
     if (!bookingToDelete) return;
     setDeleting(true);
     try {
-      await api.delete(`/api/bookings/${bookingToDelete}`);
+      await api.delete(`/bookings/${bookingToDelete}`);
       toast.success('Booking deleted successfully');
       setDeleteDialogOpen(false);
       setBookingToDelete(null);
@@ -260,7 +260,7 @@ export default function BookingsPage() {
       const [guidesRes, driversRes, staffRes] = await Promise.all([
         api.get<{ data: Guide[] }>('/guides?isActive=true&limit=100'),
         api.get<{ data: Driver[] }>('/drivers?isActive=true&limit=100'),
-        api.get<BookingStaff & { id: string }>(`/api/bookings/${booking.id}/staff`),
+        api.get<BookingStaff & { id: string }>(`/bookings/${booking.id}/staff`),
       ]);
 
       setGuides(guidesRes.data || []);
@@ -302,7 +302,7 @@ export default function BookingsPage() {
     setSaving(true);
     try {
       // Update booking details
-      await api.patch(`/api/bookings/${editingBooking.id}`, {
+      await api.patch(`/bookings/${editingBooking.id}`, {
         travelDate: editForm.travelDate,
         numberOfPeople: editForm.numberOfPeople,
         specialRequests: editForm.specialRequests,
@@ -314,10 +314,10 @@ export default function BookingsPage() {
       const guidesToRemove = originalGuides.filter((id) => !selectedGuides.includes(id));
 
       for (const guideId of guidesToAdd) {
-        await api.post(`/api/bookings/${editingBooking.id}/guides`, { guideId });
+        await api.post(`/bookings/${editingBooking.id}/guides`, { guideId });
       }
       for (const guideId of guidesToRemove) {
-        await api.delete(`/api/bookings/${editingBooking.id}/guides/${guideId}`);
+        await api.delete(`/bookings/${editingBooking.id}/guides/${guideId}`);
       }
 
       // Handle driver assignments
@@ -325,10 +325,10 @@ export default function BookingsPage() {
       const driversToRemove = originalDrivers.filter((id) => !selectedDrivers.includes(id));
 
       for (const driverId of driversToAdd) {
-        await api.post(`/api/bookings/${editingBooking.id}/drivers`, { driverId });
+        await api.post(`/bookings/${editingBooking.id}/drivers`, { driverId });
       }
       for (const driverId of driversToRemove) {
-        await api.delete(`/api/bookings/${editingBooking.id}/drivers/${driverId}`);
+        await api.delete(`/bookings/${editingBooking.id}/drivers/${driverId}`);
       }
 
       toast.success('Booking updated successfully', {

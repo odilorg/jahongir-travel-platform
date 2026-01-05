@@ -123,7 +123,7 @@ export default function VehiclesPage() {
       params.set('limit', '20');
       if (typeFilter) params.set('type', typeFilter);
 
-      const response = await api.get<VehiclesResponse>(`/api/vehicles?${params.toString()}`);
+      const response = await api.get<VehiclesResponse>(`/vehicles?${params.toString()}`);
 
       // Filter by search on client side (plate, make, model, driver name)
       let filteredData = response.data;
@@ -200,7 +200,7 @@ export default function VehiclesPage() {
 
       if (editingVehicle) {
         const { driverId, ...updateData } = payload;
-        await api.put(`/api/vehicles/${editingVehicle.id}`, updateData);
+        await api.put(`/vehicles/${editingVehicle.id}`, updateData);
         toast.success('Vehicle updated successfully');
       } else {
         await api.post('/vehicles', payload);
@@ -217,7 +217,7 @@ export default function VehiclesPage() {
 
   const toggleVehicleActive = async (vehicle: Vehicle) => {
     try {
-      await api.put(`/api/vehicles/${vehicle.id}`, { isActive: !vehicle.isActive });
+      await api.put(`/vehicles/${vehicle.id}`, { isActive: !vehicle.isActive });
       toast.success(vehicle.isActive ? 'Vehicle deactivated' : 'Vehicle activated');
       fetchVehicles();
     } catch (error: any) {
@@ -230,7 +230,7 @@ export default function VehiclesPage() {
       return;
     }
     try {
-      await api.delete(`/api/vehicles/${vehicle.id}`);
+      await api.delete(`/vehicles/${vehicle.id}`);
       toast.success('Vehicle deleted successfully');
       fetchVehicles();
     } catch (error: any) {

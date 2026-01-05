@@ -103,7 +103,7 @@ export default function ToursPage() {
 
     setDeleting(true);
     try {
-      await api.delete(`/api/tours/${tourToDelete}`);
+      await api.delete(`/tours/${tourToDelete}`);
       toast.success('Tour deleted successfully');
       setDeleteDialogOpen(false);
       setTourToDelete(null);

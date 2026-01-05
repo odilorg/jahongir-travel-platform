@@ -157,7 +157,7 @@ export default function NewBookingPage() {
       // Assign guides
       for (const guideId of selectedGuides) {
         try {
-          await api.post(`/api/bookings/${bookingId}/guides`, { guideId });
+          await api.post(`/bookings/${bookingId}/guides`, { guideId });
         } catch (error) {
           console.error(`Failed to assign guide ${guideId}:`, error);
         }
@@ -166,7 +166,7 @@ export default function NewBookingPage() {
       // Assign drivers
       for (const driverId of selectedDrivers) {
         try {
-          await api.post(`/api/bookings/${bookingId}/drivers`, { driverId });
+          await api.post(`/bookings/${bookingId}/drivers`, { driverId });
         } catch (error) {
           console.error(`Failed to assign driver ${driverId}:`, error);
         }
@@ -175,7 +175,7 @@ export default function NewBookingPage() {
       // Update notes if provided
       if (form.notes) {
         try {
-          await api.patch(`/api/bookings/${bookingId}/status`, {
+          await api.patch(`/bookings/${bookingId}/status`, {
             status: 'pending',
             notes: form.notes,
           });

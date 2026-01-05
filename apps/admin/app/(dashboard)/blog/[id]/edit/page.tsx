@@ -42,7 +42,7 @@ export default function EditBlogPostPage() {
   const fetchPost = async () => {
     setLoading(true);
     try {
-      const data = await api.get<BlogPost>(`/api/blog/id/${id}`);
+      const data = await api.get<BlogPost>(`/blog/id/${id}`);
       setPost(data);
     } catch (error: any) {
       toast.error('Failed to load blog post');
@@ -56,7 +56,7 @@ export default function EditBlogPostPage() {
   const handleSubmit = async (data: any) => {
     setSubmitting(true);
     try {
-      await api.patch(`/api/blog/${id}`, data);
+      await api.patch(`/blog/${id}`, data);
       toast.success('Blog post updated successfully!', {
         description: 'Redirecting to blog list...',
         duration: 2000,

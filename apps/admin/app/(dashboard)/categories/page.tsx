@@ -152,7 +152,7 @@ export default function CategoriesPage() {
     try {
       if (editingCategory) {
         // Update existing category
-        await api.patch(`/api/categories/${editingCategory.id}`, formData);
+        await api.patch(`/categories/${editingCategory.id}`, formData);
         toast.success('Category updated successfully');
       } else {
         // Create new category
@@ -184,7 +184,7 @@ export default function CategoriesPage() {
 
     setDeleting(true);
     try {
-      await api.delete(`/api/categories/${categoryToDelete}`);
+      await api.delete(`/categories/${categoryToDelete}`);
       toast.success('Category deleted successfully');
       setDeleteDialogOpen(false);
       setCategoryToDelete(null);

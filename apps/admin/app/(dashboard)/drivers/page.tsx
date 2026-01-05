@@ -131,7 +131,7 @@ export default function DriversPage() {
       params.set('limit', '10');
       if (search) params.set('search', search);
 
-      const response = await api.get<DriversResponse>(`/api/drivers?${params.toString()}`);
+      const response = await api.get<DriversResponse>(`/drivers?${params.toString()}`);
       setDrivers(response.data);
       setMeta(response.meta);
     } catch (error: any) {
@@ -153,7 +153,7 @@ export default function DriversPage() {
   const viewDriverDetails = async (driverId: string) => {
     setLoadingDriver(true);
     try {
-      const driver = await api.get<DriverWithBookings>(`/api/drivers/${driverId}`);
+      const driver = await api.get<DriverWithBookings>(`/drivers/${driverId}`);
       setSelectedDriver(driver);
     } catch (error: any) {
       toast.error('Failed to load driver details');
@@ -187,7 +187,7 @@ export default function DriversPage() {
 
     try {
       if (editingDriver) {
-        await api.patch(`/api/drivers/${editingDriver.id}`, formData);
+        await api.patch(`/drivers/${editingDriver.id}`, formData);
         toast.success('Driver updated successfully');
       } else {
         await api.post('/drivers', formData);
@@ -214,7 +214,7 @@ export default function DriversPage() {
 
   const toggleDriverActive = async (driver: Driver) => {
     try {
-      await api.patch(`/api/drivers/${driver.id}`, { isActive: !driver.isActive });
+      await api.patch(`/drivers/${driver.id}`, { isActive: !driver.isActive });
       toast.success(driver.isActive ? 'Driver deactivated' : 'Driver activated');
       fetchDrivers();
       fetchStats();

@@ -45,7 +45,7 @@ export default function ContactPage() {
 
   const handleMarkResolved = async (id: string) => {
     try {
-      await api.patch(`/api/contact/${id}/status`, { status: 'RESOLVED' });
+      await api.patch(`/contact/${id}/status`, { status: 'RESOLVED' });
       toast.success('Inquiry marked as resolved');
       fetchInquiries();
     } catch (error: any) {
@@ -56,7 +56,7 @@ export default function ContactPage() {
 
   const handleMarkRead = async (id: string) => {
     try {
-      await api.patch(`/api/contact/${id}/status`, { status: 'READ' });
+      await api.patch(`/contact/${id}/status`, { status: 'READ' });
       toast.success('Inquiry marked as read');
       fetchInquiries();
     } catch (error: any) {

@@ -66,7 +66,7 @@ export default function BlogPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await api.delete(`/api/blog/${id}`);
+      await api.delete(`/blog/${id}`);
       toast.success('Post deleted successfully');
       setDeleteConfirm(null);
       fetchPosts();

@@ -134,7 +134,7 @@ export default function GuidesPage() {
       params.set('limit', '10');
       if (search) params.set('search', search);
 
-      const response = await api.get<GuidesResponse>(`/api/guides?${params.toString()}`);
+      const response = await api.get<GuidesResponse>(`/guides?${params.toString()}`);
       setGuides(response.data);
       setMeta(response.meta);
     } catch (error: any) {
@@ -156,7 +156,7 @@ export default function GuidesPage() {
   const viewGuideDetails = async (guideId: string) => {
     setLoadingGuide(true);
     try {
-      const guide = await api.get<GuideWithBookings>(`/api/guides/${guideId}`);
+      const guide = await api.get<GuideWithBookings>(`/guides/${guideId}`);
       setSelectedGuide(guide);
     } catch (error: any) {
       toast.error('Failed to load guide details');
@@ -189,7 +189,7 @@ export default function GuidesPage() {
 
     try {
       if (editingGuide) {
-        await api.patch(`/api/guides/${editingGuide.id}`, formData);
+        await api.patch(`/guides/${editingGuide.id}`, formData);
         toast.success('Guide updated successfully');
       } else {
         await api.post('/guides', formData);
@@ -216,7 +216,7 @@ export default function GuidesPage() {
 
   const toggleGuideActive = async (guide: Guide) => {
     try {
-      await api.patch(`/api/guides/${guide.id}`, { isActive: !guide.isActive });
+      await api.patch(`/guides/${guide.id}`, { isActive: !guide.isActive });
       toast.success(guide.isActive ? 'Guide deactivated' : 'Guide activated');
       fetchGuides();
       fetchStats();

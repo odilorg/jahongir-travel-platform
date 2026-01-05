@@ -108,7 +108,7 @@ export default function GuestsPage() {
       params.set('sortOrder', 'desc');
       if (search) params.set('search', search);
 
-      const response = await api.get<GuestsResponse>(`/api/guests?${params.toString()}`);
+      const response = await api.get<GuestsResponse>(`/guests?${params.toString()}`);
       setGuests(response.data);
       setMeta(response.meta);
     } catch (error: any) {
@@ -131,7 +131,7 @@ export default function GuestsPage() {
   const viewGuestDetails = async (guestId: string) => {
     setLoadingGuest(true);
     try {
-      const guest = await api.get<GuestWithBookings>(`/api/guests/${guestId}`);
+      const guest = await api.get<GuestWithBookings>(`/guests/${guestId}`);
       setSelectedGuest(guest);
     } catch (error: any) {
       toast.error('Failed to load guest details');

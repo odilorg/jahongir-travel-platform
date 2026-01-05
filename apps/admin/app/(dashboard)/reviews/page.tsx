@@ -50,7 +50,7 @@ export default function ReviewsPage() {
 
   const handleApprove = async (id: string) => {
     try {
-      await api.patch(`/api/reviews/${id}/approve`, {});
+      await api.patch(`/reviews/${id}/approve`, {});
       toast.success('Review approved');
       fetchReviews();
     } catch (error: any) {
@@ -61,7 +61,7 @@ export default function ReviewsPage() {
 
   const handleReject = async (id: string) => {
     try {
-      await api.patch(`/api/reviews/${id}/reject`, {});
+      await api.patch(`/reviews/${id}/reject`, {});
       toast.success('Review rejected');
       fetchReviews();
     } catch (error: any) {
@@ -74,7 +74,7 @@ export default function ReviewsPage() {
     if (!confirm('Are you sure you want to delete this review?')) return;
 
     try {
-      await api.delete(`/api/reviews/${id}`);
+      await api.delete(`/reviews/${id}`);
       toast.success('Review deleted');
       fetchReviews();
     } catch (error: any) {
