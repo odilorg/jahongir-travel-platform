@@ -61,7 +61,7 @@ export default function LoginPage() {
       toast.success('Login successful!');
 
       // Redirect to dashboard with full page reload to trigger AuthContext refresh
-      window.location.href = '/dashboard';
+      window.location.href = '/admin/dashboard';
     } catch (error: any) {
       toast.error(error.message || 'Invalid credentials');
     } finally {

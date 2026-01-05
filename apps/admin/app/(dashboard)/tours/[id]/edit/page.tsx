@@ -81,8 +81,8 @@ export default function EditTourPage() {
   const fetchTour = async () => {
     setLoading(true);
     try {
-      // paramId contains tour ID from URL, use /api/tours/id/:id endpoint
-      const data = await api.get<TourApiResponse>(`/api/tours/id/${paramId}`);
+      // paramId contains tour ID from URL, use /tours/id/:id endpoint
+      const data = await api.get<TourApiResponse>(`/tours/id/${paramId}`);
 
       // Store the actual ID for PATCH requests
       setTourId(data.id);
