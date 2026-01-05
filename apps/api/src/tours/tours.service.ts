@@ -271,6 +271,28 @@ export class ToursService {
             },
           },
         },
+        departures: {
+          where: {
+            isActive: true,
+            startDate: {
+              gte: new Date(),
+            },
+          },
+          orderBy: { startDate: 'asc' },
+        },
+        pricingTiers: {
+          where: { isActive: true },
+          orderBy: { order: 'asc' },
+          include: {
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
+            },
+          },
+        },
         _count: {
           select: {
             reviews: true,
@@ -369,6 +391,32 @@ export class ToursService {
       };
     });
 
+    // Format departures for response
+    const departures = tour.departures.map((departure) => ({
+      id: departure.id,
+      startDate: departure.startDate,
+      endDate: departure.endDate,
+      maxSpots: departure.maxSpots,
+      spotsRemaining: departure.spotsRemaining,
+      status: departure.status,
+      priceModifier: departure.priceModifier ? Number(departure.priceModifier) : null,
+      isGuaranteed: departure.isGuaranteed,
+    }));
+
+    // Flatten pricing tier translations
+    const pricingTiers = tour.pricingTiers.map((tier) => {
+      const tierTranslation = getTranslationWithFallback(tier.translations, locale);
+
+      return {
+        id: tier.id,
+        minGuests: tier.minGuests,
+        maxGuests: tier.maxGuests,
+        pricePerPerson: Number(tier.pricePerPerson),
+        order: tier.order,
+        label: tierTranslation?.label || `${tier.minGuests}-${tier.maxGuests} guests`,
+      };
+    });
+
     return {
       id: tour.id,
       categoryId: tour.categoryId, // Include for admin edit form
@@ -404,6 +452,8 @@ export class ToursService {
       itineraryItems,
       reviews: tour.reviews,
       faqs,
+      departures,
+      pricingTiers,
       _count: tour._count,
       averageRating: avgRating._avg.rating ? Number(avgRating._avg.rating.toFixed(1)) : null,
     };
@@ -469,6 +519,28 @@ export class ToursService {
           take: 10,
         },
         faqs: {
+          orderBy: { order: 'asc' },
+          include: {
+            translations: {
+              where: {
+                locale: {
+                  in: [locale, DEFAULT_LOCALE],
+                },
+              },
+            },
+          },
+        },
+        departures: {
+          where: {
+            isActive: true,
+            startDate: {
+              gte: new Date(),
+            },
+          },
+          orderBy: { startDate: 'asc' },
+        },
+        pricingTiers: {
+          where: { isActive: true },
           orderBy: { order: 'asc' },
           include: {
             translations: {
@@ -578,6 +650,32 @@ export class ToursService {
       };
     });
 
+    // Format departures for response
+    const departures = tour.departures.map((departure) => ({
+      id: departure.id,
+      startDate: departure.startDate,
+      endDate: departure.endDate,
+      maxSpots: departure.maxSpots,
+      spotsRemaining: departure.spotsRemaining,
+      status: departure.status,
+      priceModifier: departure.priceModifier ? Number(departure.priceModifier) : null,
+      isGuaranteed: departure.isGuaranteed,
+    }));
+
+    // Flatten pricing tier translations
+    const pricingTiers = tour.pricingTiers.map((tier) => {
+      const tierTranslation = getTranslationWithFallback(tier.translations, locale);
+
+      return {
+        id: tier.id,
+        minGuests: tier.minGuests,
+        maxGuests: tier.maxGuests,
+        pricePerPerson: Number(tier.pricePerPerson),
+        order: tier.order,
+        label: tierTranslation?.label || `${tier.minGuests}-${tier.maxGuests} guests`,
+      };
+    });
+
     return {
       id: tour.id,
       categoryId: tour.categoryId, // Include for consistency with findById
@@ -613,6 +711,8 @@ export class ToursService {
       itineraryItems,
       reviews: tour.reviews,
       faqs,
+      departures,
+      pricingTiers,
       _count: tour._count,
       averageRating: avgRating._avg.rating ? Number(avgRating._avg.rating.toFixed(1)) : null,
     };
@@ -783,6 +883,240 @@ export class ToursService {
           slug: categoryTranslation?.slug || '',
         },
         _count: tour._count,
+      };
+    });
+  }
+
+  // ============================================================================
+  // DEPARTURES CRUD
+  // ============================================================================
+
+  async createDeparture(tourId: string, data: {
+    startDate: Date;
+    endDate: Date;
+    maxSpots: number;
+    spotsRemaining: number;
+    status?: string;
+    priceModifier?: number;
+    isGuaranteed?: boolean;
+    isActive?: boolean;
+  }) {
+    // Verify tour exists
+    const tour = await this.prisma.tour.findUnique({
+      where: { id: tourId },
+    });
+
+    if (!tour) {
+      throw new NotFoundException(`Tour with ID "${tourId}" not found`);
+    }
+
+    return this.prisma.tourDeparture.create({
+      data: {
+        tourId,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        maxSpots: data.maxSpots,
+        spotsRemaining: data.spotsRemaining,
+        status: (data.status as any) || 'available',
+        priceModifier: data.priceModifier,
+        isGuaranteed: data.isGuaranteed ?? false,
+        isActive: data.isActive ?? true,
+      },
+    });
+  }
+
+  async updateDeparture(id: string, data: {
+    startDate?: Date;
+    endDate?: Date;
+    maxSpots?: number;
+    spotsRemaining?: number;
+    status?: string;
+    priceModifier?: number;
+    isGuaranteed?: boolean;
+    isActive?: boolean;
+  }) {
+    try {
+      return await this.prisma.tourDeparture.update({
+        where: { id },
+        data: {
+          ...(data.startDate && { startDate: data.startDate }),
+          ...(data.endDate && { endDate: data.endDate }),
+          ...(data.maxSpots !== undefined && { maxSpots: data.maxSpots }),
+          ...(data.spotsRemaining !== undefined && { spotsRemaining: data.spotsRemaining }),
+          ...(data.status && { status: data.status as any }),
+          ...(data.priceModifier !== undefined && { priceModifier: data.priceModifier }),
+          ...(data.isGuaranteed !== undefined && { isGuaranteed: data.isGuaranteed }),
+          ...(data.isActive !== undefined && { isActive: data.isActive }),
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Departure with ID "${id}" not found`);
+      }
+      throw error;
+    }
+  }
+
+  async deleteDeparture(id: string) {
+    try {
+      await this.prisma.tourDeparture.delete({
+        where: { id },
+      });
+      return { message: 'Departure deleted successfully' };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Departure with ID "${id}" not found`);
+      }
+      throw error;
+    }
+  }
+
+  async getDepartures(tourId: string, includeInactive = false) {
+    const where: any = { tourId };
+    if (!includeInactive) {
+      where.isActive = true;
+    }
+
+    return this.prisma.tourDeparture.findMany({
+      where,
+      orderBy: { startDate: 'asc' },
+    });
+  }
+
+  // ============================================================================
+  // PRICING TIERS CRUD
+  // ============================================================================
+
+  async createPricingTier(tourId: string, data: {
+    minGuests: number;
+    maxGuests: number;
+    pricePerPerson: number;
+    order?: number;
+    isActive?: boolean;
+    translations?: { locale: string; label: string }[];
+  }) {
+    // Verify tour exists
+    const tour = await this.prisma.tour.findUnique({
+      where: { id: tourId },
+    });
+
+    if (!tour) {
+      throw new NotFoundException(`Tour with ID "${tourId}" not found`);
+    }
+
+    return this.prisma.tourPricingTier.create({
+      data: {
+        tourId,
+        minGuests: data.minGuests,
+        maxGuests: data.maxGuests,
+        pricePerPerson: data.pricePerPerson,
+        order: data.order ?? 0,
+        isActive: data.isActive ?? true,
+        ...(data.translations && {
+          translations: {
+            create: data.translations.map((t) => ({
+              locale: t.locale as any,
+              label: t.label,
+            })),
+          },
+        }),
+      },
+      include: {
+        translations: true,
+      },
+    });
+  }
+
+  async updatePricingTier(id: string, data: {
+    minGuests?: number;
+    maxGuests?: number;
+    pricePerPerson?: number;
+    order?: number;
+    isActive?: boolean;
+    translations?: { locale: string; label: string }[];
+  }) {
+    try {
+      // If translations are provided, delete existing and create new ones
+      if (data.translations) {
+        await this.prisma.tourPricingTierTranslation.deleteMany({
+          where: { tierId: id },
+        });
+      }
+
+      return await this.prisma.tourPricingTier.update({
+        where: { id },
+        data: {
+          ...(data.minGuests !== undefined && { minGuests: data.minGuests }),
+          ...(data.maxGuests !== undefined && { maxGuests: data.maxGuests }),
+          ...(data.pricePerPerson !== undefined && { pricePerPerson: data.pricePerPerson }),
+          ...(data.order !== undefined && { order: data.order }),
+          ...(data.isActive !== undefined && { isActive: data.isActive }),
+          ...(data.translations && {
+            translations: {
+              create: data.translations.map((t) => ({
+                locale: t.locale as any,
+                label: t.label,
+              })),
+            },
+          }),
+        },
+        include: {
+          translations: true,
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Pricing tier with ID "${id}" not found`);
+      }
+      throw error;
+    }
+  }
+
+  async deletePricingTier(id: string) {
+    try {
+      await this.prisma.tourPricingTier.delete({
+        where: { id },
+      });
+      return { message: 'Pricing tier deleted successfully' };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Pricing tier with ID "${id}" not found`);
+      }
+      throw error;
+    }
+  }
+
+  async getPricingTiers(tourId: string, locale: Locale = DEFAULT_LOCALE, includeInactive = false) {
+    const where: any = { tourId };
+    if (!includeInactive) {
+      where.isActive = true;
+    }
+
+    const tiers = await this.prisma.tourPricingTier.findMany({
+      where,
+      orderBy: { order: 'asc' },
+      include: {
+        translations: {
+          where: {
+            locale: {
+              in: [locale, DEFAULT_LOCALE],
+            },
+          },
+        },
+      },
+    });
+
+    return tiers.map((tier) => {
+      const translation = getTranslationWithFallback(tier.translations, locale);
+      return {
+        id: tier.id,
+        tourId: tier.tourId,
+        minGuests: tier.minGuests,
+        maxGuests: tier.maxGuests,
+        pricePerPerson: Number(tier.pricePerPerson),
+        order: tier.order,
+        isActive: tier.isActive,
+        label: translation?.label || `${tier.minGuests}-${tier.maxGuests} guests`,
       };
     });
   }

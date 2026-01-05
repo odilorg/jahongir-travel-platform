@@ -60,6 +60,8 @@ model Tour {
   inquiries       TourInquiry[]
   faqs            TourFaq[]
   bookings        Booking[]
+  departures      TourDeparture[]
+  pricingTiers    TourPricingTier[]
 
   @@index([categoryId])
   @@index([isActive])
@@ -210,6 +212,92 @@ model TourFaqTranslation {
   @@unique([faqId, locale])
   @@index([locale])
   @@index([faqId])
+}
+
+// Enum for departure status
+enum DepartureStatus {
+  available
+  filling_fast
+  almost_full
+  sold_out
+  cancelled
+}
+
+model TourDeparture {
+  id              String          @id @default(cuid())
+  tourId          String
+  tour            Tour            @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  // Departure dates
+  startDate       DateTime
+  endDate         DateTime
+
+  // Availability
+  maxSpots        Int
+  spotsRemaining  Int
+  status          DepartureStatus @default(available)
+
+  // Pricing modifier (e.g., 1.15 for peak season, 0.9 for early bird)
+  priceModifier   Decimal?        @db.Decimal(4, 2)
+
+  // Guaranteed departure flag
+  isGuaranteed    Boolean         @default(false)
+
+  // Status
+  isActive        Boolean         @default(true)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([tourId])
+  @@index([startDate])
+  @@index([status])
+  @@index([isActive])
+}
+
+model TourPricingTier {
+  id              String   @id @default(cuid())
+  tourId          String
+  tour            Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  // Guest range for this tier
+  minGuests       Int
+  maxGuests       Int
+
+  // Price per person for this tier
+  pricePerPerson  Decimal  @db.Decimal(10, 2)
+
+  // Order for display
+  order           Int      @default(0)
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  translations    TourPricingTierTranslation[]
+
+  @@index([tourId])
+  @@index([order])
+}
+
+model TourPricingTierTranslation {
+  id          String           @id @default(cuid())
+  tierId      String
+  tier        TourPricingTier  @relation(fields: [tierId], references: [id], onDelete: Cascade)
+
+  locale      Locale
+
+  // Translatable label (e.g., "1-2 guests", "3-5 guests", "Private Tour")
+  label       String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tierId, locale])
+  @@index([locale])
+  @@index([tierId])
 }
 
 // ============================================================================

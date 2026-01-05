@@ -389,6 +389,181 @@ async function main() {
 
   console.log('✓ Sample tour created with 3 languages');
 
+  // Add departures for the sample tour
+  console.log('\n📅 Creating tour departures...');
+
+  const today = new Date();
+  const departureDates = [
+    { offset: 14, spots: 8 },   // 2 weeks from now
+    { offset: 28, spots: 12 },  // 4 weeks from now
+    { offset: 42, spots: 4 },   // 6 weeks from now (almost full)
+    { offset: 56, spots: 0 },   // 8 weeks from now (sold out)
+  ];
+
+  for (const dep of departureDates) {
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() + dep.offset);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 3); // 3-day tour
+
+    await prisma.tourDeparture.create({
+      data: {
+        tourId: silkRoadTour.id,
+        startDate,
+        endDate,
+        maxSpots: 12,
+        spotsRemaining: dep.spots,
+        status: dep.spots === 0 ? 'sold_out' : dep.spots <= 4 ? 'almost_full' : dep.spots <= 8 ? 'filling_fast' : 'available',
+        priceModifier: dep.offset <= 14 ? 1.1 : null, // 10% premium for near dates
+        isGuaranteed: dep.offset <= 28,
+        isActive: true,
+      },
+    });
+  }
+  console.log('✓ 4 tour departures created');
+
+  // Add pricing tiers for the sample tour
+  console.log('\n💰 Creating pricing tiers...');
+
+  const pricingTiers = [
+    {
+      minGuests: 1, maxGuests: 2, price: 549, order: 1,
+      labels: {
+        en: '1-2 guests (Private)',
+        ru: '1-2 гостя (Частный)',
+        uz: '1-2 mehmon (Xususiy)',
+      },
+    },
+    {
+      minGuests: 3, maxGuests: 5, price: 449, order: 2,
+      labels: {
+        en: '3-5 guests',
+        ru: '3-5 гостей',
+        uz: '3-5 mehmon',
+      },
+    },
+    {
+      minGuests: 6, maxGuests: 12, price: 399, order: 3,
+      labels: {
+        en: '6+ guests (Group)',
+        ru: '6+ гостей (Групповой)',
+        uz: '6+ mehmon (Guruh)',
+      },
+    },
+  ];
+
+  for (const tier of pricingTiers) {
+    await prisma.tourPricingTier.create({
+      data: {
+        tourId: silkRoadTour.id,
+        minGuests: tier.minGuests,
+        maxGuests: tier.maxGuests,
+        pricePerPerson: tier.price,
+        order: tier.order,
+        isActive: true,
+        translations: {
+          create: [
+            { locale: Locale.en, label: tier.labels.en },
+            { locale: Locale.ru, label: tier.labels.ru },
+            { locale: Locale.uz, label: tier.labels.uz },
+          ],
+        },
+      },
+    });
+  }
+  console.log('✓ 3 pricing tiers created with translations');
+
+  // Add FAQs for the sample tour
+  console.log('\n❓ Creating tour FAQs...');
+
+  const faqs = [
+    {
+      order: 1,
+      translations: {
+        en: {
+          question: 'What is the best time to visit Uzbekistan?',
+          answer: 'The best time to visit Uzbekistan is during spring (April-May) and autumn (September-October) when the weather is mild and pleasant. Summers can be very hot, especially in desert areas.',
+        },
+        ru: {
+          question: 'Когда лучше всего посетить Узбекистан?',
+          answer: 'Лучшее время для посещения Узбекистана - весна (апрель-май) и осень (сентябрь-октябрь), когда погода мягкая и приятная. Летом может быть очень жарко, особенно в пустынных районах.',
+        },
+        uz: {
+          question: 'O\'zbekistonga qachon tashrif buyurish yaxshiroq?',
+          answer: 'O\'zbekistonga tashrif buyurish uchun eng yaxshi vaqt - bahor (aprel-may) va kuz (sentabr-oktabr), ob-havo yumshoq va yoqimli bo\'lganda. Yoz juda issiq bo\'lishi mumkin, ayniqsa cho\'l hududlarida.',
+        },
+      },
+    },
+    {
+      order: 2,
+      translations: {
+        en: {
+          question: 'Do I need a visa to visit Uzbekistan?',
+          answer: 'Many nationalities can visit Uzbekistan visa-free for up to 30 days. Please check with your local embassy or our team for the most current visa requirements based on your nationality.',
+        },
+        ru: {
+          question: 'Нужна ли мне виза для посещения Узбекистана?',
+          answer: 'Граждане многих стран могут посещать Узбекистан без визы сроком до 30 дней. Пожалуйста, уточните в местном посольстве или у нашей команды актуальные визовые требования для вашего гражданства.',
+        },
+        uz: {
+          question: 'O\'zbekistonga tashrif buyurish uchun viza kerakmi?',
+          answer: 'Ko\'p davlat fuqarolari O\'zbekistonga 30 kungacha vizasiz tashrif buyurishlari mumkin. Iltimos, fuqaroligingiz asosida eng so\'nggi viza talablari uchun mahalliy elchixonangiz yoki jamoamiz bilan bog\'laning.',
+        },
+      },
+    },
+    {
+      order: 3,
+      translations: {
+        en: {
+          question: 'What is included in the tour price?',
+          answer: 'The tour price includes accommodation, breakfast, transportation between cities, entrance fees to all sites mentioned in the itinerary, and services of an English-speaking guide. International flights and personal expenses are not included.',
+        },
+        ru: {
+          question: 'Что включено в стоимость тура?',
+          answer: 'В стоимость тура входит проживание, завтрак, транспорт между городами, входные билеты на все объекты, указанные в маршруте, и услуги англоговорящего гида. Международные перелёты и личные расходы не включены.',
+        },
+        uz: {
+          question: 'Tur narxiga nima kiradi?',
+          answer: 'Tur narxiga turar joy, nonushta, shaharlar orasidagi transport, yo\'nalishda ko\'rsatilgan barcha joylarga kirish to\'lovlari va ingliz tilida gid xizmatlari kiradi. Xalqaro parvozlar va shaxsiy xarajatlar kiritilmagan.',
+        },
+      },
+    },
+    {
+      order: 4,
+      translations: {
+        en: {
+          question: 'Can I customize the tour itinerary?',
+          answer: 'Yes! We specialize in creating personalized travel experiences. Contact our team to discuss your preferences, and we\'ll create a custom itinerary tailored to your interests, schedule, and budget.',
+        },
+        ru: {
+          question: 'Могу ли я настроить маршрут тура?',
+          answer: 'Да! Мы специализируемся на создании персонализированных путешествий. Свяжитесь с нашей командой, чтобы обсудить ваши предпочтения, и мы создадим индивидуальный маршрут с учётом ваших интересов, графика и бюджета.',
+        },
+        uz: {
+          question: 'Tur yo\'nalishini o\'zgartirishim mumkinmi?',
+          answer: 'Ha! Biz shaxsiylashtirilgan sayohat tajribalarini yaratishga ixtisoslashganmiz. Afzalliklaringizni muhokama qilish uchun jamoamiz bilan bog\'laning va biz qiziqishlaringiz, jadvalingiz va byudjetingizga moslashtirilgan maxsus yo\'nalish yaratamiz.',
+        },
+      },
+    },
+  ];
+
+  for (const faq of faqs) {
+    await prisma.tourFaq.create({
+      data: {
+        tourId: silkRoadTour.id,
+        order: faq.order,
+        translations: {
+          create: [
+            { locale: Locale.en, question: faq.translations.en.question, answer: faq.translations.en.answer },
+            { locale: Locale.ru, question: faq.translations.ru.question, answer: faq.translations.ru.answer },
+            { locale: Locale.uz, question: faq.translations.uz.question, answer: faq.translations.uz.answer },
+          ],
+        },
+      },
+    });
+  }
+  console.log('✓ 4 FAQs created with translations');
+
   // ============================================================================
   // 6. SAMPLE BLOG POST (with translations)
   // ============================================================================
@@ -443,6 +618,9 @@ async function main() {
   console.log('  • 4 cities (12 translations total)');
   console.log('  • 1 blog category (3 translations total)');
   console.log('  • 1 sample tour (3 translations total)');
+  console.log('  • 4 tour departures');
+  console.log('  • 3 pricing tiers (9 translations total)');
+  console.log('  • 4 tour FAQs (12 translations total)');
   console.log('  • 1 blog post (3 translations total)');
   console.log('\n🌍 Languages: EN, RU, UZ');
   console.log('');
