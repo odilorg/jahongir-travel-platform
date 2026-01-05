@@ -580,6 +580,7 @@ export class ToursService {
 
     return {
       id: tour.id,
+      categoryId: tour.categoryId, // Include for consistency with findById
       price: tour.price,
       duration: tour.duration,
       maxGroupSize: tour.maxGroupSize,
@@ -655,6 +656,10 @@ export class ToursService {
         ...tourData
       } = updateTourDto;
 
+      // Debug logging
+      this.logger.log(`Updating tour ${id} with categoryId: ${categoryId}`);
+      this.logger.log(`tourData keys: ${Object.keys(tourData).join(', ')}`);
+
       const tour = await this.prisma.tour.update({
         where: { id },
         data: {
@@ -672,7 +677,7 @@ export class ToursService {
       });
 
       const translation = tour.translations[0];
-      this.logger.log(`Updated tour: ${translation?.title || tour.id} (${tour.id})`);
+      this.logger.log(`Updated tour: ${translation?.title || tour.id} (${tour.id}), new categoryId: ${tour.categoryId}`);
       return tour;
     } catch (error) {
       if (error.code === 'P2025') {

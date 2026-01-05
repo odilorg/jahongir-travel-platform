@@ -94,8 +94,7 @@ export async function getTours(params?: {
   if (params?.limit) searchParams.set('limit', params.limit.toString())
   if (params?.categoryId) searchParams.set('categoryId', params.categoryId)
   if (params?.featured) searchParams.set('featured', params.featured)
-  // TODO: Backend needs to support locale parameter
-  // if (params?.locale) searchParams.set('lang', params.locale)
+  if (params?.locale) searchParams.set('lang', params.locale)
 
   const url = `${API_BASE_URL}/tours?${searchParams}`
 
@@ -113,8 +112,7 @@ export async function getTours(params?: {
 export async function getFeaturedTours(limit: number = 6, locale?: string): Promise<Tour[]> {
   const searchParams = new URLSearchParams()
   searchParams.set('limit', limit.toString())
-  // TODO: Backend needs to support locale
-  // if (locale) searchParams.set('lang', locale)
+  if (locale) searchParams.set('lang', locale)
 
   const url = `${API_BASE_URL}/tours/featured?${searchParams}`
 
@@ -165,8 +163,7 @@ export async function getCategories(params?: {
   const searchParams = new URLSearchParams()
 
   if (params?.limit) searchParams.set('limit', params.limit.toString())
-  // TODO: Backend needs to support locale
-  // if (params?.locale) searchParams.set('lang', params.locale)
+  if (params?.locale) searchParams.set('lang', params.locale)
 
   const url = `${API_BASE_URL}/categories?${searchParams}`
 

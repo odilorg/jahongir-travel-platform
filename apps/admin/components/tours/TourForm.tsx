@@ -141,6 +141,8 @@ export function TourForm({ initialData, onSubmit, submitting }: TourFormProps) {
       excluded,
       images,
     };
+    console.log('Submitting tour with categoryId:', formattedData.categoryId);
+    console.log('Full form data:', formattedData);
     await onSubmit(formattedData);
   };
 
