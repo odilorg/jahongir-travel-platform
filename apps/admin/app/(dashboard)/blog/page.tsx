@@ -54,7 +54,7 @@ export default function BlogPage() {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const response = await api.get<{ data: BlogPost[] }>('/api/blog');
+      const response = await api.get<{ data: BlogPost[] }>('/blog');
       setPosts(response.data);
     } catch (error: any) {
       toast.error('Failed to load blog posts');

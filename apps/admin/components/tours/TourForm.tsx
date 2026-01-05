@@ -161,7 +161,7 @@ export function TourForm({ initialData, onSubmit, submitting }: TourFormProps) {
 
   const fetchCategories = async () => {
     try {
-      const data = await api.get<Category[]>('/api/categories');
+      const data = await api.get<Category[]>('/categories');
       setCategories(data);
     } catch (error) {
       toast.error('Failed to load categories');

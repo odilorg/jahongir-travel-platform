@@ -38,7 +38,7 @@ export default function ReviewsPage() {
   const fetchReviews = async () => {
     setLoading(true);
     try {
-      const data = await api.get<Review[]>('/api/reviews');
+      const data = await api.get<Review[]>('/reviews');
       setReviews(data);
     } catch (error: any) {
       toast.error('Failed to load reviews');

@@ -157,7 +157,7 @@ export default function BookingsPage() {
   const fetchAllBookings = async () => {
     try {
       // Fetch more bookings for calendar (last 3 months + next 3 months)
-      const response = await api.get<BookingsResponse>('/api/bookings?limit=500');
+      const response = await api.get<BookingsResponse>('/bookings?limit=500');
       setAllBookings(response.data);
     } catch (error: any) {
       console.error('All bookings fetch error:', error);
@@ -186,7 +186,7 @@ export default function BookingsPage() {
 
   const fetchStats = async () => {
     try {
-      const data = await api.get<Stats>('/api/bookings/stats');
+      const data = await api.get<Stats>('/bookings/stats');
       setStats(data);
     } catch (error: any) {
       console.error('Stats fetch error:', error);
@@ -258,8 +258,8 @@ export default function BookingsPage() {
     setLoadingStaff(true);
     try {
       const [guidesRes, driversRes, staffRes] = await Promise.all([
-        api.get<{ data: Guide[] }>('/api/guides?isActive=true&limit=100'),
-        api.get<{ data: Driver[] }>('/api/drivers?isActive=true&limit=100'),
+        api.get<{ data: Guide[] }>('/guides?isActive=true&limit=100'),
+        api.get<{ data: Driver[] }>('/drivers?isActive=true&limit=100'),
         api.get<BookingStaff & { id: string }>(`/api/bookings/${booking.id}/staff`),
       ]);
 

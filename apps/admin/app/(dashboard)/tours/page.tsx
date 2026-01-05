@@ -79,8 +79,8 @@ export default function ToursPage() {
     setLoading(true);
     try {
       const [toursResponse, categoriesData] = await Promise.all([
-        api.get<{ data: Tour[] }>('/api/tours'),
-        api.get<Category[]>('/api/categories'),
+        api.get<{ data: Tour[] }>('/tours'),
+        api.get<Category[]>('/categories'),
       ]);
 
       setTours(toursResponse.data);

@@ -16,7 +16,7 @@ export default function NewBlogPostPage() {
   const handleSubmit = async (data: any) => {
     setSubmitting(true);
     try {
-      await api.post('/api/blog', data);
+      await api.post('/blog', data);
       toast.success('Blog post created successfully!', {
         description: 'Redirecting to blog list...',
         duration: 2000,

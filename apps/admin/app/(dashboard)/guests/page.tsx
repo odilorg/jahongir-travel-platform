@@ -121,7 +121,7 @@ export default function GuestsPage() {
 
   const fetchStats = async () => {
     try {
-      const data = await api.get<Stats>('/api/guests/stats');
+      const data = await api.get<Stats>('/guests/stats');
       setStats(data);
     } catch (error: any) {
       console.error('Stats fetch error:', error);

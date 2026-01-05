@@ -81,9 +81,9 @@ export default function NewBookingPage() {
     setLoading(true);
     try {
       const [toursRes, guidesRes, driversRes] = await Promise.all([
-        api.get<{ data: Tour[] }>('/api/tours?limit=100&isActive=true'),
-        api.get<{ data: Guide[] }>('/api/guides?isActive=true&limit=100'),
-        api.get<{ data: Driver[] }>('/api/drivers?isActive=true&limit=100'),
+        api.get<{ data: Tour[] }>('/tours?limit=100&isActive=true'),
+        api.get<{ data: Guide[] }>('/guides?isActive=true&limit=100'),
+        api.get<{ data: Driver[] }>('/drivers?isActive=true&limit=100'),
       ]);
 
       setTours(toursRes.data || []);
@@ -142,7 +142,7 @@ export default function NewBookingPage() {
     setSubmitting(true);
     try {
       // Create booking
-      const response = await api.post<{ booking: { id: string } }>('/api/bookings', {
+      const response = await api.post<{ booking: { id: string } }>('/bookings', {
         tourId: form.tourId,
         customerName: form.customerName,
         customerEmail: form.customerEmail,

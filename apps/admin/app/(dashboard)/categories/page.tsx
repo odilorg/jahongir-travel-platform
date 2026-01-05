@@ -76,7 +76,7 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const data = await api.get<Category[]>('/api/categories');
+      const data = await api.get<Category[]>('/categories');
       setCategories(data);
     } catch (error: any) {
       toast.error('Failed to load categories');
@@ -156,7 +156,7 @@ export default function CategoriesPage() {
         toast.success('Category updated successfully');
       } else {
         // Create new category
-        await api.post('/api/categories', formData);
+        await api.post('/categories', formData);
         toast.success('Category created successfully');
       }
       closeModal();

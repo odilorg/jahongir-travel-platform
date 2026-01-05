@@ -33,7 +33,7 @@ export default function ContactPage() {
   const fetchInquiries = async () => {
     setLoading(true);
     try {
-      const data = await api.get<ContactInquiry[]>('/api/contact');
+      const data = await api.get<ContactInquiry[]>('/contact');
       setInquiries(data);
     } catch (error: any) {
       toast.error('Failed to load inquiries');

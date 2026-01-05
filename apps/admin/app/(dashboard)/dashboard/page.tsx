@@ -33,11 +33,11 @@ export default function DashboardPage() {
     try {
       // Fetch all stats in parallel with error handling for each
       const [toursResponse, categories, reviewsResponse, contactsResponse, usersResponse] = await Promise.all([
-        api.get<{ data: any[] }>('/api/tours').catch(() => ({ data: [] })),
-        api.get<any[]>('/api/categories').catch(() => []),
-        api.get<{ data: any[] }>('/api/reviews?status=PENDING').catch(() => ({ data: [] })),
-        api.get<{ data: any[] }>('/api/contact?status=NEW').catch(() => ({ data: [] })),
-        api.get<{ data: any[] }>('/api/users').catch(() => ({ data: [] })),
+        api.get<{ data: any[] }>('/tours').catch(() => ({ data: [] })),
+        api.get<any[]>('/categories').catch(() => []),
+        api.get<{ data: any[] }>('/reviews?status=PENDING').catch(() => ({ data: [] })),
+        api.get<{ data: any[] }>('/contact?status=NEW').catch(() => ({ data: [] })),
+        api.get<{ data: any[] }>('/users').catch(() => ({ data: [] })),
       ]);
 
       setStats({

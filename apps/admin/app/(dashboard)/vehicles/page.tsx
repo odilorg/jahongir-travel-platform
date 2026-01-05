@@ -148,7 +148,7 @@ export default function VehiclesPage() {
 
   const fetchDrivers = async () => {
     try {
-      const response = await api.get<DriversResponse>('/api/drivers?limit=100&isActive=true');
+      const response = await api.get<DriversResponse>('/drivers?limit=100&isActive=true');
       setDrivers(response.data);
     } catch (error: any) {
       console.error('Failed to load drivers:', error);
@@ -203,7 +203,7 @@ export default function VehiclesPage() {
         await api.put(`/api/vehicles/${editingVehicle.id}`, updateData);
         toast.success('Vehicle updated successfully');
       } else {
-        await api.post('/api/vehicles', payload);
+        await api.post('/vehicles', payload);
         toast.success('Vehicle created successfully');
       }
       setShowForm(false);

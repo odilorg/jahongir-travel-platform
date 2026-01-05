@@ -50,7 +50,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await api.post<LoginResponse>('/api/auth/login', {
+      const response = await api.post<LoginResponse>('/auth/login', {
         email: data.email,
         password: data.password,
       });

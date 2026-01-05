@@ -143,7 +143,7 @@ export default function DriversPage() {
 
   const fetchStats = async () => {
     try {
-      const data = await api.get<Stats>('/api/drivers/stats');
+      const data = await api.get<Stats>('/drivers/stats');
       setStats(data);
     } catch (error: any) {
       console.error('Stats fetch error:', error);
@@ -190,7 +190,7 @@ export default function DriversPage() {
         await api.patch(`/api/drivers/${editingDriver.id}`, formData);
         toast.success('Driver updated successfully');
       } else {
-        await api.post('/api/drivers', formData);
+        await api.post('/drivers', formData);
         toast.success('Driver created successfully');
       }
       setShowForm(false);

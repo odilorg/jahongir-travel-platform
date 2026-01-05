@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Fetch user data from /api/auth/profile
-      const userData = await api.get<User>('/api/auth/profile');
+      const userData = await api.get<User>('/auth/profile');
       setUser(userData);
     } catch (error: any) {
       // If 401 Unauthorized, clear token
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await api.post('/api/auth/logout', {});
+      await api.post('/auth/logout', {});
     } catch (error) {
       // Ignore logout errors
     } finally {

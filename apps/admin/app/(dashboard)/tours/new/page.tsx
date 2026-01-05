@@ -16,7 +16,7 @@ export default function NewTourPage() {
   const handleSubmit = async (data: any) => {
     setSubmitting(true);
     try {
-      const newTour = await api.post('/api/tours', data);
+      const newTour = await api.post('/tours', data);
       toast.success('Tour created successfully!', {
         description: 'Redirecting to tours list...',
         duration: 2000,

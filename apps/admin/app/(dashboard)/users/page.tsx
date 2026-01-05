@@ -36,7 +36,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await api.get<{ data: User[]; pagination: any }>('/api/users');
+      const response = await api.get<{ data: User[]; pagination: any }>('/users');
       setUsers(response.data);
     } catch (error: any) {
       toast.error('Failed to load users');

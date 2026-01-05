@@ -146,7 +146,7 @@ export default function GuidesPage() {
 
   const fetchStats = async () => {
     try {
-      const data = await api.get<Stats>('/api/guides/stats');
+      const data = await api.get<Stats>('/guides/stats');
       setStats(data);
     } catch (error: any) {
       console.error('Stats fetch error:', error);
@@ -192,7 +192,7 @@ export default function GuidesPage() {
         await api.patch(`/api/guides/${editingGuide.id}`, formData);
         toast.success('Guide updated successfully');
       } else {
-        await api.post('/api/guides', formData);
+        await api.post('/guides', formData);
         toast.success('Guide created successfully');
       }
       setShowForm(false);
