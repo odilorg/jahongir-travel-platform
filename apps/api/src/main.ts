@@ -11,7 +11,7 @@ async function bootstrap() {
   // Serve static files from uploads directory
   // Use process.cwd() to get the correct path regardless of compiled location
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads/',
+    prefix: '/api/uploads/',
   });
 
   // Enable CORS
