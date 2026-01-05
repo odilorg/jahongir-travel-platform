@@ -23,12 +23,28 @@ export class BlogService {
 
   async create(createPostDto: CreatePostDto) {
     try {
+      // Extract translatable fields (don't include in BlogPost data)
+      const { title, slug, excerpt, content, metaTitle, metaDescription, metaKeywords, ...postData } = createPostDto;
+
       const post = await this.prisma.blogPost.create({
         data: {
-          ...createPostDto,
+          ...postData,
           images: createPostDto.images || [],
           publishedAt:
             createPostDto.status === 'published' ? new Date() : null,
+          translations: {
+            create: [
+              {
+                locale: 'ru',  // Default locale
+                title,
+                slug,
+                excerpt: excerpt || '',
+                content,
+                metaTitle,
+                metaDescription,
+              },
+            ],
+          },
         },
         include: {
           translations: true,
