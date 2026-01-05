@@ -339,7 +339,8 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
               <div>
                 {/* Category + Featured Badges */}
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
-                  <span className="text-sm font-medium text-brand-turquoise bg-brand-turquoise-light px-3 py-1 rounded-full">
+                  {/* Category - neutral decorative badge */}
+                  <span className="text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 px-3 py-1 rounded-full">
                     {tour.category?.name || 'Tour'}
                   </span>
                   {tour.isFeatured && (
@@ -378,25 +379,25 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
                   )}
                 </div>
 
-                {/* Trust Row */}
-                <div className="flex flex-wrap items-center gap-3 sm:gap-4 py-4 px-4 bg-surface-2 rounded-xl border border-gray-100">
+                {/* Trust Row - unified neutral chips */}
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 py-4 px-4 bg-gray-50 rounded-xl border border-gray-200">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                      <ShieldCheck className="w-4 h-4 text-green-600" />
+                    <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                      <ShieldCheck className="w-4 h-4 text-gray-500" />
                     </div>
                     <span>{t('trustNoHidden')}</span>
                   </div>
                   <div className="hidden sm:block w-px h-6 bg-gray-200" />
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                      <Headphones className="w-4 h-4 text-blue-600" />
+                    <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                      <Headphones className="w-4 h-4 text-gray-500" />
                     </div>
                     <span>{t('trustSupport')}</span>
                   </div>
                   <div className="hidden sm:block w-px h-6 bg-gray-200" />
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <div className="w-8 h-8 rounded-full bg-brand-turquoise-light flex items-center justify-center flex-shrink-0">
-                      <BadgeCheck className="w-4 h-4 text-brand-turquoise" />
+                    <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                      <BadgeCheck className="w-4 h-4 text-gray-500" />
                     </div>
                     <span>{t('trustLocal')}</span>
                   </div>
@@ -594,12 +595,12 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
                 onInquire={handleInquire}
               />
 
-              {/* Difficulty Card */}
+              {/* Difficulty Card - neutral badge */}
               {tour.difficulty && (
                 <Card className="border-0 shadow-sm">
                   <CardContent className="p-5">
                     <h3 className="font-semibold text-sm text-muted-foreground mb-2">{t('difficulty')}</h3>
-                    <span className="inline-flex items-center gap-2 bg-brand-turquoise-light text-brand-turquoise px-4 py-2 rounded-lg font-medium">
+                    <span className="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium">
                       {tCommon(`difficulty.${tour.difficulty}`) || tour.difficulty}
                     </span>
                   </CardContent>
