@@ -99,7 +99,7 @@ export default function EditBlogPostPage() {
       </div>
 
       {/* Form */}
-      <BlogForm initialData={post} onSubmit={handleSubmit} submitting={submitting} />
+      <BlogForm initialData={post} onSubmit={handleSubmit} submitting={submitting} currentUserId={post?.authorId} />
 
       {/* Translations */}
       <div className="space-y-4">

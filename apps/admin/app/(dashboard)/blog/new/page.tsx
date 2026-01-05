@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { BlogForm } from '@/components/blog/BlogForm';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -12,6 +12,24 @@ import { toast } from 'sonner';
 export default function NewBlogPostPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const user = await api.get<{ id: string }>('/auth/profile');
+      setCurrentUserId(user.id);
+    } catch (error) {
+      console.error('Failed to fetch current user:', error);
+      toast.error('Failed to load user profile');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (data: any) => {
     setSubmitting(true);
@@ -31,6 +49,14 @@ export default function NewBlogPostPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -47,7 +73,11 @@ export default function NewBlogPostPage() {
       </div>
 
       {/* Form */}
-      <BlogForm onSubmit={handleSubmit} submitting={submitting} />
+      <BlogForm 
+        onSubmit={handleSubmit} 
+        submitting={submitting} 
+        currentUserId={currentUserId}
+      />
     </div>
   );
 }
