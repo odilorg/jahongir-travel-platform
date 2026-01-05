@@ -69,7 +69,7 @@ export function TranslationTabs({
   const fetchTranslations = async () => {
     try {
       setLoading(true);
-      const data = await api.get<Translation[]>(`/api/admin/translations/${entityType}/${entityId}`);
+      const data = await api.get<Translation[]>(`/admin/translations/${entityType}/${entityId}`);
 
       const translationsMap: Record<Locale, Translation | null> = {
         en: null,
@@ -157,7 +157,7 @@ export function TranslationTabs({
       } = currentData;
 
       await api.put(
-        `/api/admin/translations/${entityType}/${entityId}/${activeLocale}`,
+        `/admin/translations/${entityType}/${entityId}/${activeLocale}`,
         dataToSave
       );
 
