@@ -7,7 +7,7 @@ module.exports = {
       instances: 1,
       exec_mode: 'fork',
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: 'development',
         PORT: 4000,
       },
       error_file: '/var/log/pm2/jahongir-dev-api-error.log',
@@ -22,7 +22,7 @@ module.exports = {
       instances: 1,
       exec_mode: 'fork',
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: 'development',
         PORT: 3010,
       },
       error_file: '/var/log/pm2/jahongir-dev-web-error.log',
@@ -33,11 +33,11 @@ module.exports = {
       name: 'jahongir-dev-admin',
       cwd: '/var/www/jahongir-dev/apps/admin',
       script: 'npx',
-      args: 'next start -p 3011',
+      args: 'next dev -p 3011',
       instances: 1,
       exec_mode: 'fork',
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: 'development',
         PORT: 3011,
       },
       error_file: '/var/log/pm2/jahongir-dev-admin-error.log',
