@@ -41,6 +41,9 @@ export interface Tour {
   metaTitle?: string | null
   metaDescription?: string | null
   summary?: string | null
+  bookingMode?: "instant" | "inquiry";
+  showPrice?: boolean;
+  discountedPrice?: number | string;
   _count?: {
     reviews: number
     itineraryItems: number
@@ -395,6 +398,8 @@ export interface InquiryFormData {
   phone?: string
   tourId?: string
   travelDate?: string
+  travelDateFrom?: string
+  travelDateTo?: string
   numberOfPeople?: number
   budget?: number
   message: string
@@ -407,6 +412,8 @@ export interface InquirySubmission {
   phone?: string
   tourId?: string
   travelDate?: string
+  travelDateFrom?: string
+  travelDateTo?: string
   numberOfPeople?: number
   budget?: number
   message: string

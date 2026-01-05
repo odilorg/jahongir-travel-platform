@@ -11,8 +11,10 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Tour } from "@/lib/api";
+import { submitInquiry } from "@/lib/api";
 import { AccordionItinerary } from "@/components/tour/accordion-itinerary";
 import { BookingForm, generateMockDepartures, generateMockPricingTiers } from "@/components/tour/booking-form";
+import { InquiryBookingForm, type InquiryFormData } from "@/components/tour/inquiry-booking-form";
 import { TourFAQ, generateMockFAQs } from "@/components/tour/tour-faq";
 import {
   CancellationPolicy,
@@ -177,6 +179,31 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
   const handleInquire = () => {
     // TODO: Open inquiry form or redirect to contact
     window.location.href = '/contact';
+  };
+
+  // Handler for inquiry form submission (inquiry mode)
+  const handleInquirySubmit = async (data: InquiryFormData): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const result = await submitInquiry({
+        tourId: data.tourId,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        travelDateFrom: data.travelDateFrom,
+        travelDateTo: data.travelDateTo,
+        numberOfPeople: data.numberOfPeople,
+        message: data.message || '',
+      });
+
+      if (result.success) {
+        return { success: true };
+      } else {
+        return { success: false, error: result.error || 'Something went wrong' };
+      }
+    } catch (error) {
+      console.error('Inquiry submission error:', error);
+      return { success: false, error: 'Network error. Please try again.' };
+    }
   };
 
   return (
@@ -557,43 +584,75 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
               "space-y-4 transition-all",
               sidebarShouldStop ? "lg:relative" : "lg:sticky lg:top-32"
             )}>
-              {/* Main Booking Form */}
-              <BookingForm
-                tourId={tour.id}
-                tourTitle={tour.title}
-                basePrice={Number(tour.price) || 500}
-                currency="USD"
-                duration={tour.duration}
-                departures={mockDepartures}
-                pricingTiers={mockPricingTiers}
-                maxGuests={tour.maxGroupSize || 10}
-                minGuests={1}
-                translations={{
-                  selectDate: t('selectDate') || 'Select Departure Date',
-                  selectGuests: t('selectGuests') || 'Number of Guests',
-                  guests: t('guests') || 'guests',
-                  guest: t('guest') || 'guest',
-                  from: t('from') || 'From',
-                  perPerson: tCommon('perPerson') || 'per person',
-                  total: t('total') || 'Total',
-                  bookNow: tCommon('bookNow') || 'Book Now',
-                  inquire: t('inquire') || 'Have questions? Contact us',
-                  spotsLeft: t('spotsLeft') || 'spots left',
-                  soldOut: t('soldOut') || 'Sold Out',
-                  fillingFast: t('fillingFast') || 'Filling Fast',
-                  almostFull: t('almostFull') || 'Almost Full',
-                  available: t('available') || 'Available',
-                  securePayment: t('securePayment') || 'Secure payment',
-                  freeCancellation: t('freeCancellation') || 'Free cancellation up to 30 days',
-                  instantConfirmation: t('instantConfirmation') || 'Instant confirmation',
-                  bestPrice: t('bestPrice') || 'Best Price',
-                  recommended: t('recommended') || 'Recommended',
-                  noDateSelected: t('noDateSelected') || 'Choose a date',
-                  selectDateFirst: t('selectDateFirst') || 'Select a date to continue',
-                }}
-                onBook={handleBooking}
-                onInquire={handleInquire}
-              />
+              {/* Main Booking Form - Conditional based on bookingMode */}
+              {tour.bookingMode === "inquiry" ? (
+                <InquiryBookingForm
+                  tourId={tour.id}
+                  tourTitle={tour.title}
+                  duration={tour.duration}
+                  onSubmit={handleInquirySubmit}
+                  translations={{
+                    requestQuote: t("requestQuote") || "Request Availability & Price",
+                    travelDates: t("travelDates") || "Preferred Travel Dates",
+                    startDate: t("startDate") || "Start Date",
+                    endDate: t("endDate") || "End Date",
+                    numberOfTravelers: t("numberOfTravelers") || "Number of Travelers",
+                    travelers: t("travelers") || "travelers",
+                    traveler: t("traveler") || "traveler",
+                    yourDetails: t("yourDetails") || "Your Contact Details",
+                    fullName: t("fullName") || "Full Name",
+                    email: t("email") || "Email Address",
+                    phone: t("phone") || "Phone Number",
+                    message: t("message") || "Additional Information (Optional)",
+                    messagePlaceholder: t("messagePlaceholder") || "Tell us about your travel plans...",
+                    submit: t("submitInquiry") || "Request Availability & Price",
+                    support24: t("support24") || "24/7 Support Available",
+                    personalizedQuote: t("personalizedQuote") || "Personalized Quote Within 24 Hours",
+                    noCommitment: t("noCommitment") || "No Commitment Required",
+                    successTitle: t("inquirySuccessTitle") || "Inquiry Sent!",
+                    successMessage: t("inquirySuccessMessage") || "Thank you! We will contact you within 24 hours.",
+                    errorTitle: t("inquiryErrorTitle") || "Submission Failed",
+                    tryAgain: t("tryAgain") || "Try Again",
+                  }}
+                />
+              ) : (
+                <BookingForm
+                  tourId={tour.id}
+                  tourTitle={tour.title}
+                  basePrice={Number(tour.price) || 500}
+                  currency="USD"
+                  duration={tour.duration}
+                  departures={mockDepartures}
+                  pricingTiers={mockPricingTiers}
+                  maxGuests={tour.maxGroupSize || 10}
+                  minGuests={1}
+                  translations={{
+                    selectDate: t("selectDate") || "Select Departure Date",
+                    selectGuests: t("selectGuests") || "Number of Guests",
+                    guests: t("guests") || "guests",
+                    guest: t("guest") || "guest",
+                    from: t("from") || "From",
+                    perPerson: tCommon("perPerson") || "per person",
+                    total: t("total") || "Total",
+                    bookNow: tCommon("bookNow") || "Book Now",
+                    inquire: t("inquire") || "Have questions? Contact us",
+                    spotsLeft: t("spotsLeft") || "spots left",
+                    soldOut: t("soldOut") || "Sold Out",
+                    fillingFast: t("fillingFast") || "Filling Fast",
+                    almostFull: t("almostFull") || "Almost Full",
+                    available: t("available") || "Available",
+                    securePayment: t("securePayment") || "Secure payment",
+                    freeCancellation: t("freeCancellation") || "Free cancellation up to 30 days",
+                    instantConfirmation: t("instantConfirmation") || "Instant confirmation",
+                    bestPrice: t("bestPrice") || "Best Price",
+                    recommended: t("recommended") || "Recommended",
+                    noDateSelected: t("noDateSelected") || "Choose a date",
+                    selectDateFirst: t("selectDateFirst") || "Select a date to continue",
+                  }}
+                  onBook={handleBooking}
+                  onInquire={handleInquire}
+                />
+              )}
 
               {/* Difficulty Card - neutral badge */}
               {tour.difficulty && (
@@ -618,11 +677,20 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg safe-area-bottom">
         <div className="flex items-center gap-3 p-4 max-w-7xl mx-auto">
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-muted-foreground">{t('from')}</p>
-            <p className="text-xl font-bold text-brand-turquoise truncate">
-              ${typeof tour.price === 'string' ? tour.price : tour.price.toString()}
-              <span className="text-xs font-normal text-muted-foreground ml-1">/{tCommon('perPerson')}</span>
-            </p>
+            {tour.bookingMode === "inquiry" ? (
+              <>
+                <p className="text-sm font-medium text-gray-900">{tour.title}</p>
+                <p className="text-xs text-muted-foreground">{t("requestQuote") || "Get personalized quote"}</p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-muted-foreground">{t("from")}</p>
+                <p className="text-xl font-bold text-brand-turquoise truncate">
+                  ${typeof tour.price === "string" ? tour.price : tour.price.toString()}
+                  <span className="text-xs font-normal text-muted-foreground ml-1">/{tCommon("perPerson")}</span>
+                </p>
+              </>
+            )}
           </div>
 
           {/* WhatsApp Button */}
@@ -636,14 +704,14 @@ export function TourDetailClient({ tour }: TourDetailClientProps) {
             <WhatsAppIcon className="w-6 h-6" />
           </a>
 
-          {/* Book Now Button */}
+          {/* Book Now / Request Quote Button */}
           <Button
             size="lg"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className="bg-brand-turquoise hover:bg-brand-turquoise/90 text-white font-semibold px-6 btn-hover min-h-[48px]"
-            aria-label={tCommon('bookNow')}
+            aria-label={tour.bookingMode === "inquiry" ? (t("requestQuote") || "Request Quote") : tCommon("bookNow")}
           >
-            {tCommon('bookNow')}
+            {tour.bookingMode === "inquiry" ? (t("requestQuote") || "Request Quote") : tCommon("bookNow")}
           </Button>
         </div>
       </div>
