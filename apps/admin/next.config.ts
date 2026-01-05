@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Base path for running under /admin
+  basePath: '/admin',
+
   // Memory optimizations (Next.js 15+)
   experimental: {
     webpackMemoryOptimizations: true,
