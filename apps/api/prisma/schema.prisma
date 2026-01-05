@@ -20,6 +20,11 @@ enum Locale {
   uz
 }
 
+enum BookingMode {
+  instant
+  inquiry
+}
+
 // ============================================================================
 // TOURS & CATEGORIES
 // ============================================================================
@@ -42,6 +47,7 @@ model Tour {
 
   // Pricing
   showPrice       Boolean  @default(true)
+  bookingMode     BookingMode @default(instant)
   discountedPrice Decimal? @db.Decimal(10, 2)
 
   // Status
@@ -446,6 +452,8 @@ model TourInquiry {
   // Inquiry details
   message         String   @db.Text
   travelDate      DateTime?
+  travelDateFrom  DateTime?
+  travelDateTo    DateTime?
   numberOfPeople  Int?
   budget          Decimal? @db.Decimal(10, 2)
 

@@ -1,3 +1,4 @@
+import { BookingMode } from '@prisma/client';
 import {
   IsString,
   IsNotEmpty,
@@ -6,6 +7,8 @@ import {
   IsInt,
   IsArray,
   IsBoolean,
+  IsEnum,
+  IsIn,
   Min,
   MaxLength,
 } from 'class-validator';
@@ -85,6 +88,10 @@ export class CreateTourDto {
   @IsBoolean()
   @IsOptional()
   showPrice?: boolean = true;
+
+  @IsOptional()
+  @IsIn(["instant", "inquiry"])
+  bookingMode?: "instant" | "inquiry" = "instant";
 
   @IsNumber()
   @IsOptional()
