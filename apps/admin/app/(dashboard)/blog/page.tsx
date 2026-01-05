@@ -240,7 +240,7 @@ export default function BlogPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.location.href = `/blog/${post.id}/edit`}
+                          onClick={() => router.push(`/blog/${post.id}/edit`)}
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
