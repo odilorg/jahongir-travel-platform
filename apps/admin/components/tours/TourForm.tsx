@@ -348,23 +348,23 @@ export function TourForm({ initialData, onSubmit, submitting }: TourFormProps) {
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="basic">Basic Info</TabsTrigger>
-          <TabsTrigger value="description">Description</TabsTrigger>
-          <TabsTrigger value="pricing">Pricing</TabsTrigger>
-          <TabsTrigger value="departures" className="flex items-center gap-1">
+        <TabsList className="flex w-full overflow-x-auto gap-1 md:grid md:grid-cols-7 pb-2">
+          <TabsTrigger value="basic" className="whitespace-nowrap min-w-[100px] flex-shrink-0">Basic Info</TabsTrigger>
+          <TabsTrigger value="description" className="whitespace-nowrap min-w-[100px] flex-shrink-0">Description</TabsTrigger>
+          <TabsTrigger value="pricing" className="whitespace-nowrap min-w-[90px] flex-shrink-0">Pricing</TabsTrigger>
+          <TabsTrigger value="departures" className="flex items-center gap-1 whitespace-nowrap min-w-[110px] flex-shrink-0">
             <Calendar className="h-3.5 w-3.5" />
             Departures
           </TabsTrigger>
-          <TabsTrigger value="pricingTiers" className="flex items-center gap-1">
+          <TabsTrigger value="pricingTiers" className="flex items-center gap-1 whitespace-nowrap min-w-[120px] flex-shrink-0">
             <Users className="h-3.5 w-3.5" />
             Group Pricing
           </TabsTrigger>
-          <TabsTrigger value="faqs" className="flex items-center gap-1">
+          <TabsTrigger value="faqs" className="flex items-center gap-1 whitespace-nowrap min-w-[80px] flex-shrink-0">
             <HelpCircle className="h-3.5 w-3.5" />
             FAQs
           </TabsTrigger>
-          <TabsTrigger value="seo">SEO</TabsTrigger>
+          <TabsTrigger value="seo" className="whitespace-nowrap min-w-[70px] flex-shrink-0">SEO</TabsTrigger>
         </TabsList>
 
         {/* Tab 1: Basic Info */}
