@@ -48,7 +48,7 @@ export default function BlogPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPosts();
+    await fetchPosts();
   }, []);
 
   const fetchPosts = async () => {
@@ -69,7 +69,7 @@ export default function BlogPage() {
       await api.delete(`/blog/${id}`);
       toast.success('Post deleted successfully');
       setDeleteConfirm(null);
-      fetchPosts();
+      await fetchPosts();
     } catch (error: any) {
       toast.error('Failed to delete post');
       console.error('Delete error:', error);

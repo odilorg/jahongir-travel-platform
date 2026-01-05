@@ -48,7 +48,7 @@ class ApiClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Request failed' }));
-      
+
       // Handle array of validation errors from NestJS
       let errorMessage: string;
       if (Array.isArray(error.message)) {
@@ -56,11 +56,22 @@ class ApiClient {
       } else {
         errorMessage = error.message || `HTTP error ${response.status}`;
       }
-      
+
       throw new Error(errorMessage);
     }
 
-    return response.json();
+    // Handle empty responses (204 No Content, etc.)
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return {} as T;
+    }
+
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      return {} as T;
+    }
+
+    return JSON.parse(text);
   }
 
   get<T>(endpoint: string) {
