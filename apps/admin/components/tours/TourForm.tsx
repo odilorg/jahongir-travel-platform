@@ -189,9 +189,6 @@ export function TourForm({ initialData, onSubmit, submitting }: TourFormProps) {
       included,
       excluded,
       images,
-      departures,
-      pricingTiers,
-      faqs,
     };
     console.log('Submitting tour with categoryId:', formattedData.categoryId);
     console.log('Full form data:', formattedData);
@@ -209,7 +206,6 @@ export function TourForm({ initialData, onSubmit, submitting }: TourFormProps) {
     endDate.setDate(endDate.getDate() + (initialData?.duration || 7));
 
     setDepartures([
-      ...departures,
       {
         startDate: startDate.toISOString().split('T')[0],
         endDate: endDate.toISOString().split('T')[0],
@@ -257,7 +253,6 @@ export function TourForm({ initialData, onSubmit, submitting }: TourFormProps) {
     const newMinGuests = lastTier ? lastTier.maxGuests + 1 : 1;
 
     setPricingTiers([
-      ...pricingTiers,
       {
         minGuests: newMinGuests,
         maxGuests: newMinGuests + 1,
@@ -299,7 +294,6 @@ export function TourForm({ initialData, onSubmit, submitting }: TourFormProps) {
 
   const addFAQ = () => {
     setFaqs([
-      ...faqs,
       {
         order: faqs.length,
         translations: [
