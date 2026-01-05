@@ -50,6 +50,14 @@ export class CreateInquiryDto {
   @IsOptional()
   travelDate?: string;
 
+  @IsDateString({}, { message: "Please enter a valid start date (YYYY-MM-DD)" })
+  @IsOptional()
+  travelDateFrom?: string;
+
+  @IsDateString({}, { message: "Please enter a valid end date (YYYY-MM-DD)" })
+  @IsOptional()
+  travelDateTo?: string;
+
   @IsInt({ message: 'Number of people must be a whole number' })
   @Min(1, { message: 'At least 1 person is required' })
   @Max(100, { message: 'Maximum group size is 100 people' })

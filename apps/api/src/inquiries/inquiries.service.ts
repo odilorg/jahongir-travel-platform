@@ -15,6 +15,12 @@ export class InquiriesService {
         travelDate: createInquiryDto.travelDate
           ? new Date(createInquiryDto.travelDate)
           : null,
+        travelDateFrom: createInquiryDto.travelDateFrom
+          ? new Date(createInquiryDto.travelDateFrom)
+          : null,
+        travelDateTo: createInquiryDto.travelDateTo
+          ? new Date(createInquiryDto.travelDateTo)
+          : null,
       },
       include: {
         ...(createInquiryDto.tourId && {
