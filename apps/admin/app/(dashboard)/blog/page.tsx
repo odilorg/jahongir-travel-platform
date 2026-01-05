@@ -48,7 +48,7 @@ export default function BlogPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
-    await fetchPosts();
+    fetchPosts();
   }, []);
 
   const fetchPosts = async () => {
