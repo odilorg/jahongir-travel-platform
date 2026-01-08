@@ -206,8 +206,7 @@ export default function VehiclesPage() {
       };
 
       if (editingVehicle) {
-        const { driverId, ...updateData } = payload;
-        await api.put(`/vehicles/${editingVehicle.id}`, updateData);
+        await api.patch(`/vehicles/${editingVehicle.id}`, payload);
         toast.success('Vehicle updated successfully');
       } else {
         await api.post('/vehicles', payload);
@@ -224,7 +223,7 @@ export default function VehiclesPage() {
 
   const toggleVehicleActive = async (vehicle: Vehicle) => {
     try {
-      await api.put(`/vehicles/${vehicle.id}`, { isActive: !vehicle.isActive });
+      await api.patch(`/vehicles/${vehicle.id}`, { isActive: !vehicle.isActive });
       toast.success(vehicle.isActive ? 'Vehicle deactivated' : 'Vehicle activated');
       fetchVehicles();
     } catch (error: any) {

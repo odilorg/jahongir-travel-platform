@@ -249,6 +249,25 @@ export class VehiclesService {
     // Remove driverId from update data (handled separately via DriverVehicle)
     const { driverId, ...vehicleData } = updateVehicleDto as any;
 
+    // Handle driver assignment update if driverId is provided
+    if (driverId !== undefined) {
+      // Remove all existing driver assignments
+      await this.prisma.driverVehicle.deleteMany({
+        where: { vehicleId: id },
+      });
+
+      // Add new driver assignment if driverId is not empty
+      if (driverId && driverId !== '') {
+        await this.prisma.driverVehicle.create({
+          data: {
+            vehicleId: id,
+            driverId,
+            isPrimary: true,
+          },
+        });
+      }
+    }
+
     const updated = await this.prisma.vehicle.update({
       where: { id },
       data: vehicleData,
