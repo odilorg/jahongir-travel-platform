@@ -38,10 +38,17 @@ interface Driver {
   isActive: boolean;
 }
 
-interface Vehicle {
+interface DriverVehicle {
   id: string;
   driverId: string;
+  vehicleId: string;
+  isPrimary: boolean;
   driver: Driver;
+}
+
+interface Vehicle {
+  id: string;
+  drivers: DriverVehicle[];  // Many-to-many: vehicle can have multiple drivers
   plateNumber: string;
   make: string;
   model: string;
@@ -174,7 +181,7 @@ export default function VehiclesPage() {
   const openEditForm = (vehicle: Vehicle) => {
     setEditingVehicle(vehicle);
     setFormData({
-      driverId: vehicle.driverId,
+      driverId: vehicle.drivers[0]?.driverId || '',  // Get primary driver
       plateNumber: vehicle.plateNumber,
       make: vehicle.make,
       model: vehicle.model,
@@ -246,9 +253,9 @@ export default function VehiclesPage() {
     return VEHICLE_TYPES.find(t => t.value === type)?.label || type;
   };
 
-  // Group vehicles by driver
+  // Group vehicles by driver (using primary driver or 'Unassigned')
   const vehiclesByDriver = vehicles.reduce((acc, vehicle) => {
-    const driverName = vehicle.driver.name;
+    const driverName = vehicle.drivers[0]?.driver?.name || 'Unassigned';
     if (!acc[driverName]) {
       acc[driverName] = [];
     }
