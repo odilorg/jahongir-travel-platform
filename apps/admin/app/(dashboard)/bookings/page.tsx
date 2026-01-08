@@ -38,8 +38,33 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { BookingCalendar } from '@/components/BookingCalendar';
-import { BookingGrid } from '@/components/BookingGrid';
+import dynamic from 'next/dynamic';
+
+// Lazy load heavy components to improve initial load performance
+// These components are 1,000+ lines each and cause slow dev server
+const BookingCalendar = dynamic(
+  () => import('@/components/BookingCalendar').then(mod => ({ default: mod.BookingCalendar })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
+        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+      </div>
+    ),
+  }
+);
+
+const BookingGrid = dynamic(
+  () => import('@/components/BookingGrid').then(mod => ({ default: mod.BookingGrid })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
+        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+      </div>
+    ),
+  }
+);
 import { ConfirmDialog } from '@/components/shared';
 
 interface Guest {

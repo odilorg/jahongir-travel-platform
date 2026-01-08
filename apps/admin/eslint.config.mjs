@@ -13,6 +13,14 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Component size limits to prevent CPU issues
+  // Keep components under 300 lines for faster compilation
+  {
+    files: ["**/*.tsx", "**/*.ts"],
+    rules: {
+      "max-lines": ["warn", { max: 300, skipBlankLines: true, skipComments: true }],
+    },
+  },
 ]);
 
 export default eslintConfig;

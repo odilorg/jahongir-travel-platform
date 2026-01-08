@@ -5,11 +5,15 @@
   "description": "Modern travel platform for Uzbekistan tours - Customer website, Admin panel, and API",
   "scripts": {
     "dev": "turbo dev",
+    "dev:safe": "./scripts/check-health.sh && turbo dev",
     "build": "turbo build",
     "test": "turbo test",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "clean": "turbo clean && rm -rf node_modules",
+    "clean:cache": "./scripts/clean-cache.sh",
+    "clean:deep": "./scripts/clean-cache.sh --deep",
+    "health": "./scripts/check-health.sh",
     "type-check": "turbo type-check"
   },
   "devDependencies": {
