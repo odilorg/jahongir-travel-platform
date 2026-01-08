@@ -102,18 +102,28 @@ export class BookingsService {
       createBookingDto.numberOfPeople,
     );
 
-    // Find or create guest for customer tracking
-    const guest = await this.guestsService.findOrCreate({
-      email: createBookingDto.customerEmail,
-      name: createBookingDto.customerName,
-      phone: createBookingDto.customerPhone,
-    });
+    // Get guest ID - either use provided ID or find/create guest
+    let guestId: string;
+    if (createBookingDto.guestId) {
+      // Admin explicitly selected a guest - use that ID
+      guestId = createBookingDto.guestId;
+      this.logger.log(`Using pre-selected guest: ${guestId}`);
+    } else {
+      // Find or create guest for customer tracking
+      const guest = await this.guestsService.findOrCreate({
+        email: createBookingDto.customerEmail,
+        name: createBookingDto.customerName,
+        phone: createBookingDto.customerPhone,
+      });
+      guestId = guest.id;
+      this.logger.log(`Found/created guest: ${guestId}`);
+    }
 
     // Create booking with guest link
     const booking = await this.prisma.booking.create({
       data: {
         tourId: createBookingDto.tourId,
-        guestId: guest.id,
+        guestId,
         customerName: createBookingDto.customerName,
         customerEmail: createBookingDto.customerEmail,
         customerPhone: createBookingDto.customerPhone,
@@ -144,14 +154,14 @@ export class BookingsService {
     });
 
     // Update guest stats (non-blocking)
-    this.guestsService.updateStats(guest.id, totalPrice).catch((error) => {
+    this.guestsService.updateStats(guestId, totalPrice).catch((error) => {
       this.logger.error(`Failed to update guest stats: ${error.message}`);
     });
 
     const tourTitle = tour.translations[0]?.title || 'Unknown Tour';
 
     this.logger.log(
-      `New booking created: ${booking.id} for tour ${tourTitle} (Guest: ${guest.email})`,
+      `New booking created: ${booking.id} for tour ${tourTitle} (Guest: ${createBookingDto.customerEmail})`,
     );
 
     // Send email notifications (non-blocking)

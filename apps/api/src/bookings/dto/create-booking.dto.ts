@@ -18,6 +18,10 @@ export class CreateBookingDto {
   @IsNotEmpty({ message: 'Tour ID is required' })
   tourId: string;
 
+  @IsString({ message: 'Guest ID must be a string' })
+  @IsOptional()
+  guestId?: string;
+
   @IsString({ message: 'Name must be a string' })
   @IsNotEmpty({ message: 'Please enter your full name' })
   @MinLength(2, { message: 'Name must be at least 2 characters' })
