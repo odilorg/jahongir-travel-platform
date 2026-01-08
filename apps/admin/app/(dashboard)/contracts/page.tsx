@@ -113,7 +113,7 @@ export default function ContractsPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<ContractsResponse['meta'] | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
@@ -142,7 +142,7 @@ export default function ContractsPage() {
       const params = new URLSearchParams();
       params.set('page', String(page));
       params.set('limit', '10');
-      if (statusFilter) params.set('status', statusFilter);
+      if (statusFilter && statusFilter !== 'all') params.set('status', statusFilter);
 
       const response = await api.get<ContractsResponse>(`/contracts?${params.toString()}`);
       setContracts(response.data);
@@ -427,7 +427,7 @@ export default function ContractsPage() {
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Statuses</SelectItem>
+            <SelectItem value="all">All Statuses</SelectItem>
             {STATUS_OPTIONS.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
             ))}
@@ -453,9 +453,9 @@ export default function ContractsPage() {
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No contracts found</h3>
               <p className="text-muted-foreground">
-                {statusFilter ? 'Try changing the filter' : 'Add your first contract to get started'}
+                {statusFilter !== 'all' ? 'Try changing the filter' : 'Add your first contract to get started'}
               </p>
-              {!statusFilter && (
+              {statusFilter === 'all' && (
                 <Button className="mt-4" onClick={openCreateForm}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Contract
