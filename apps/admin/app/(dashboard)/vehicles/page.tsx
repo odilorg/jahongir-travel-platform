@@ -448,26 +448,25 @@ export default function VehiclesPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                {!editingVehicle && (
-                  <div>
-                    <Label htmlFor="driverId">Driver *</Label>
-                    <Select
-                      value={formData.driverId}
-                      onValueChange={(value) => setFormData({ ...formData, driverId: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select driver" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {drivers.map((driver) => (
-                          <SelectItem key={driver.id} value={driver.id}>
-                            {driver.name} {driver.phone ? `(${driver.phone})` : ''}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                <div>
+                  <Label htmlFor="driverId">Driver {!editingVehicle && '*'}</Label>
+                  <Select
+                    value={formData.driverId}
+                    onValueChange={(value) => setFormData({ ...formData, driverId: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select driver (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No driver (unassigned)</SelectItem>
+                      {drivers.map((driver) => (
+                        <SelectItem key={driver.id} value={driver.id}>
+                          {driver.name} {driver.phone ? `(${driver.phone})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -576,7 +575,7 @@ export default function VehiclesPage() {
                   <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="flex-1">
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={saving || (!editingVehicle && !formData.driverId)} className="flex-1">
+                  <Button type="submit" disabled={saving} className="flex-1">
                     {saving ? 'Saving...' : editingVehicle ? 'Update Vehicle' : 'Add Vehicle'}
                   </Button>
                 </div>
