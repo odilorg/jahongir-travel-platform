@@ -540,11 +540,25 @@ export default function DriversPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No vehicle assigned</SelectItem>
-                      {vehicles.map((vehicle) => (
-                        <SelectItem key={vehicle.id} value={vehicle.id}>
-                          {vehicle.make} {vehicle.model} ({vehicle.plateNumber})
-                        </SelectItem>
-                      ))}
+                      {vehicles
+                        .filter((vehicle) => {
+                          // Show vehicle if:
+                          // 1. It's the one currently assigned to this driver, OR
+                          // 2. It's not assigned to any other driver
+                          const currentDriverVehicleId = editingDriver?.vehicles?.[0]?.vehicleId;
+                          if (vehicle.id === currentDriverVehicleId) return true;
+
+                          // Check if vehicle is assigned to another driver
+                          const isAssignedToOther = drivers.some(
+                            (d) => d.id !== editingDriver?.id && d.vehicles?.some((v) => v.vehicleId === vehicle.id)
+                          );
+                          return !isAssignedToOther;
+                        })
+                        .map((vehicle) => (
+                          <SelectItem key={vehicle.id} value={vehicle.id}>
+                            {vehicle.make} {vehicle.model} ({vehicle.plateNumber})
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
