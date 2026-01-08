@@ -103,7 +103,7 @@ function DraggableBookingCard({
     data: { booking },
   });
 
-  const duration = booking.tour.duration || 1;
+  const duration = booking.tour?.duration || 1;
   const topOffset = bookingIndex * (bookingHeight + 4);
 
   const style = {
@@ -192,7 +192,7 @@ interface DragOverlayBookingProps {
 }
 
 function DragOverlayBooking({ booking, statusColor }: DragOverlayBookingProps) {
-  const duration = booking.tour.duration || 1;
+  const duration = booking.tour?.duration || 1;
 
   return (
     <div
@@ -358,6 +358,9 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
   const tours = useMemo(() => {
     const tourMap = new Map<string, { id: string; title: string; slug: string }>();
     bookings.forEach((booking) => {
+      // Skip bookings without tour data
+      if (!booking.tour) return;
+
       if (!tourMap.has(booking.tour.id)) {
         tourMap.set(booking.tour.id, booking.tour);
       }
@@ -396,7 +399,7 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
       const occupiedRows: Record<string, Set<number>> = {};
 
       tourBookings.forEach((booking) => {
-        const duration = booking.tour.duration || 1;
+        const duration = booking.tour?.duration || 1;
         const startDate = new Date(booking.travelDate);
 
         // Find the first row that's free for ALL days of this booking
@@ -458,6 +461,9 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
 
     // First pass: add all bookings to their start date
     bookings.forEach((booking) => {
+      // Skip bookings without tour data
+      if (!booking.tour) return;
+
       const tourId = booking.tour.id;
       const dateKey = new Date(booking.travelDate).toISOString().split('T')[0];
 
@@ -470,7 +476,7 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
       matrix[tourId][dateKey].bookings.push(booking);
 
       // Mark subsequent days as spanned (for multi-day tours)
-      const duration = booking.tour.duration || 1;
+      const duration = booking.tour?.duration || 1;
       if (duration > 1) {
         for (let i = 1; i < duration; i++) {
           const spannedDate = new Date(booking.travelDate);
@@ -490,7 +496,7 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
 
   // Helper to calculate how many days a booking can span within the visible range
   const getVisibleSpan = (booking: Booking, startDateKey: string) => {
-    const duration = booking.tour.duration || 1;
+    const duration = booking.tour?.duration || 1;
     if (duration <= 1) return 1;
 
     const bookingStart = new Date(booking.travelDate);
@@ -620,7 +626,7 @@ export function BookingGrid({ bookings, onBookingClick, onUpdateStatus, onUpdate
 
     Object.entries(bookingMatrix[tourId] || {}).forEach(([dateKey, cell]) => {
       cell.bookings.forEach((booking) => {
-        const duration = booking.tour.duration || 1;
+        const duration = booking.tour?.duration || 1;
         if (duration > 1) {
           for (let i = 1; i < duration; i++) {
             const skipDate = new Date(booking.travelDate);
