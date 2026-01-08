@@ -451,14 +451,14 @@ export default function VehiclesPage() {
                 <div>
                   <Label htmlFor="driverId">Driver {!editingVehicle && '*'}</Label>
                   <Select
-                    value={formData.driverId}
-                    onValueChange={(value) => setFormData({ ...formData, driverId: value })}
+                    value={formData.driverId || 'none'}
+                    onValueChange={(value) => setFormData({ ...formData, driverId: value === 'none' ? '' : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select driver (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No driver (unassigned)</SelectItem>
+                      <SelectItem value="none">No driver (unassigned)</SelectItem>
                       {drivers.map((driver) => (
                         <SelectItem key={driver.id} value={driver.id}>
                           {driver.name} {driver.phone ? `(${driver.phone})` : ''}
