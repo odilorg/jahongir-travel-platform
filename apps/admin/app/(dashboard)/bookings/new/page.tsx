@@ -17,9 +17,20 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { MultiSelect, type MultiSelectOption } from '@/components/ui/multi-select';
-import { ArrowLeft, Loader2, Calendar, User, Phone, Mail, Users, MapPin, Car } from 'lucide-react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ArrowLeft, Loader2, Calendar, User, Phone, Mail, Users, MapPin, Car, Search, UserPlus, Check } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface Tour {
   id: string;
@@ -44,6 +55,16 @@ interface Driver {
   isActive: boolean;
 }
 
+interface Guest {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  country?: string;
+  totalBookings: number;
+  totalSpent: string;
+}
+
 export default function NewBookingPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -54,9 +75,18 @@ export default function NewBookingPage() {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
 
+  // Guest search state
+  const [guests, setGuests] = useState<Guest[]>([]);
+  const [guestSearch, setGuestSearch] = useState('');
+  const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
+  const [guestSearchOpen, setGuestSearchOpen] = useState(false);
+  const [searchingGuests, setSearchingGuests] = useState(false);
+  const [showNewGuestForm, setShowNewGuestForm] = useState(false);
+
   // Form state
   const [form, setForm] = useState({
     tourId: '',
+    guestId: '', // Added for guest relation
     customerName: '',
     customerEmail: '',
     customerPhone: '',
@@ -103,6 +133,63 @@ export default function NewBookingPage() {
     setSelectedTour(tour || null);
   };
 
+  // Search guests
+  const searchGuests = async (query: string) => {
+    if (!query || query.length < 2) {
+      setGuests([]);
+      return;
+    }
+
+    setSearchingGuests(true);
+    try {
+      const response = await api.get<{ data: Guest[] }>(`/guests?search=${encodeURIComponent(query)}&limit=10`);
+      setGuests(response.data || []);
+    } catch (error) {
+      console.error('Failed to search guests:', error);
+      setGuests([]);
+    } finally {
+      setSearchingGuests(false);
+    }
+  };
+
+  // Handle guest selection
+  const handleGuestSelect = (guest: Guest) => {
+    setSelectedGuest(guest);
+    setForm({
+      ...form,
+      guestId: guest.id,
+      customerName: guest.name,
+      customerEmail: guest.email,
+      customerPhone: guest.phone || '',
+    });
+    setGuestSearchOpen(false);
+    setShowNewGuestForm(false);
+  };
+
+  // Handle manual entry (new guest)
+  const handleManualEntry = () => {
+    setSelectedGuest(null);
+    setForm({
+      ...form,
+      guestId: '',
+      customerName: '',
+      customerEmail: '',
+      customerPhone: '',
+    });
+    setShowNewGuestForm(true);
+    setGuestSearchOpen(false);
+  };
+
+  // Debounce guest search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (guestSearch) {
+        searchGuests(guestSearch);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [guestSearch]);
+
   // Convert guides and drivers to MultiSelect options
   const guideOptions: MultiSelectOption[] = guides.map((guide) => ({
     value: guide.id,
@@ -144,6 +231,7 @@ export default function NewBookingPage() {
       // Create booking
       const response = await api.post<{ booking: { id: string } }>('/bookings', {
         tourId: form.tourId,
+        guestId: form.guestId || undefined, // Link to existing guest if selected
         customerName: form.customerName,
         customerEmail: form.customerEmail,
         customerPhone: form.customerPhone || undefined,
@@ -290,41 +378,194 @@ export default function NewBookingPage() {
                   <User className="h-5 w-5" />
                   Customer Information
                 </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Search for existing guest or create new
+                </p>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Guest Search */}
                 <div className="space-y-2">
-                  <Label htmlFor="customerName">Full Name *</Label>
-                  <Input
-                    id="customerName"
-                    placeholder="John Doe"
-                    value={form.customerName}
-                    onChange={(e) => setForm({ ...form, customerName: e.target.value })}
-                    required
-                  />
+                  <Label>Search Guest</Label>
+                  <Popover open={guestSearchOpen} onOpenChange={setGuestSearchOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={guestSearchOpen}
+                        className="w-full justify-between"
+                      >
+                        {selectedGuest ? (
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            <span>{selectedGuest.name}</span>
+                            {selectedGuest.totalBookings > 0 && (
+                              <Badge variant="secondary" className="ml-2">
+                                {selectedGuest.totalBookings} booking(s)
+                              </Badge>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">Search by name, email, or phone...</span>
+                        )}
+                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[400px] p-0" align="start">
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder="Type to search guests..."
+                          value={guestSearch}
+                          onValueChange={setGuestSearch}
+                        />
+                        <CommandList>
+                          <CommandEmpty>
+                            {searchingGuests ? (
+                              <div className="flex items-center justify-center py-6">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span className="ml-2">Searching...</span>
+                              </div>
+                            ) : guestSearch.length < 2 ? (
+                              'Type at least 2 characters to search'
+                            ) : (
+                              'No guests found'
+                            )}
+                          </CommandEmpty>
+                          {guests.length > 0 && (
+                            <CommandGroup heading="Guests">
+                              {guests.map((guest) => (
+                                <CommandItem
+                                  key={guest.id}
+                                  value={guest.id}
+                                  onSelect={() => handleGuestSelect(guest)}
+                                  className="cursor-pointer"
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      selectedGuest?.id === guest.id ? 'opacity-100' : 'opacity-0'
+                                    )}
+                                  />
+                                  <div className="flex flex-col flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">{guest.name}</span>
+                                      {guest.totalBookings > 0 && (
+                                        <Badge variant="secondary" className="text-xs">
+                                          {guest.totalBookings} booking(s)
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                      <span className="flex items-center gap-1">
+                                        <Mail className="h-3 w-3" />
+                                        {guest.email}
+                                      </span>
+                                      {guest.phone && (
+                                        <span className="flex items-center gap-1">
+                                          <Phone className="h-3 w-3" />
+                                          {guest.phone}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          )}
+                          <CommandSeparator />
+                          <CommandGroup>
+                            <CommandItem onSelect={handleManualEntry} className="cursor-pointer">
+                              <UserPlus className="mr-2 h-4 w-4" />
+                              <span>Create new guest</span>
+                            </CommandItem>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="customerEmail">Email *</Label>
-                    <Input
-                      id="customerEmail"
-                      type="email"
-                      placeholder="john@example.com"
-                      value={form.customerEmail}
-                      onChange={(e) => setForm({ ...form, customerEmail: e.target.value })}
-                      required
-                    />
+
+                {/* Selected Guest Info or Manual Entry */}
+                {selectedGuest && (
+                  <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">Selected Guest</p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleManualEntry}
+                      >
+                        Change
+                      </Button>
+                    </div>
+                    <div className="grid gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span>{selectedGuest.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span>{selectedGuest.email}</span>
+                      </div>
+                      {selectedGuest.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <span>{selectedGuest.phone}</span>
+                        </div>
+                      )}
+                      {selectedGuest.totalBookings > 0 && (
+                        <div className="flex items-center gap-2 mt-2 pt-2 border-t">
+                          <Badge variant="secondary">
+                            Total Bookings: {selectedGuest.totalBookings}
+                          </Badge>
+                          {parseFloat(selectedGuest.totalSpent) > 0 && (
+                            <Badge variant="secondary">
+                              Total Spent: ${parseFloat(selectedGuest.totalSpent).toLocaleString()}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="customerPhone">Phone</Label>
-                    <Input
-                      id="customerPhone"
-                      type="tel"
-                      placeholder="+998 90 123 45 67"
-                      value={form.customerPhone}
-                      onChange={(e) => setForm({ ...form, customerPhone: e.target.value })}
-                    />
+                )}
+
+                {/* Manual Entry Form (for new guests or walk-ins) */}
+                {(showNewGuestForm || !selectedGuest) && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="customerName">Full Name *</Label>
+                      <Input
+                        id="customerName"
+                        placeholder="John Doe"
+                        value={form.customerName}
+                        onChange={(e) => setForm({ ...form, customerName: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="customerEmail">Email *</Label>
+                        <Input
+                          id="customerEmail"
+                          type="email"
+                          placeholder="john@example.com"
+                          value={form.customerEmail}
+                          onChange={(e) => setForm({ ...form, customerEmail: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="customerPhone">Phone</Label>
+                        <Input
+                          id="customerPhone"
+                          type="tel"
+                          placeholder="+998 90 123 45 67"
+                          value={form.customerPhone}
+                          onChange={(e) => setForm({ ...form, customerPhone: e.target.value })}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
