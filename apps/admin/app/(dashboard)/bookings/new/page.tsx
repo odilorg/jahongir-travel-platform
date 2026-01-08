@@ -133,16 +133,36 @@ export default function NewBookingPage() {
     setSelectedTour(tour || null);
   };
 
+  // Load initial guests (recent guests)
+  const loadInitialGuests = async () => {
+    setSearchingGuests(true);
+    try {
+      // Load recent guests sorted by last booking
+      const response = await api.get<{ data: Guest[] }>('/guests?sortBy=lastBookingAt&sortOrder=desc&limit=20');
+      setGuests(response.data || []);
+    } catch (error) {
+      console.error('Failed to load guests:', error);
+      setGuests([]);
+    } finally {
+      setSearchingGuests(false);
+    }
+  };
+
   // Search guests
   const searchGuests = async (query: string) => {
-    if (!query || query.length < 2) {
-      setGuests([]);
+    if (!query || query.trim().length === 0) {
+      // If search is cleared, reload initial guests
+      loadInitialGuests();
       return;
+    }
+
+    if (query.length < 2) {
+      return; // Wait for at least 2 characters
     }
 
     setSearchingGuests(true);
     try {
-      const response = await api.get<{ data: Guest[] }>(`/guests?search=${encodeURIComponent(query)}&limit=10`);
+      const response = await api.get<{ data: Guest[] }>(`/guests?search=${encodeURIComponent(query)}&limit=20`);
       setGuests(response.data || []);
     } catch (error) {
       console.error('Failed to search guests:', error);
@@ -180,12 +200,17 @@ export default function NewBookingPage() {
     setGuestSearchOpen(false);
   };
 
+  // Load initial guests when popover opens
+  useEffect(() => {
+    if (guestSearchOpen && guests.length === 0 && !guestSearch) {
+      loadInitialGuests();
+    }
+  }, [guestSearchOpen]);
+
   // Debounce guest search
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (guestSearch) {
-        searchGuests(guestSearch);
-      }
+      searchGuests(guestSearch);
     }, 300);
     return () => clearTimeout(timer);
   }, [guestSearch]);
@@ -422,16 +447,18 @@ export default function NewBookingPage() {
                             {searchingGuests ? (
                               <div className="flex items-center justify-center py-6">
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                <span className="ml-2">Searching...</span>
+                                <span className="ml-2">
+                                  {guestSearch ? 'Searching...' : 'Loading recent guests...'}
+                                </span>
                               </div>
-                            ) : guestSearch.length < 2 ? (
-                              'Type at least 2 characters to search'
                             ) : (
-                              'No guests found'
+                              <div className="text-center py-6 text-sm text-muted-foreground">
+                                {guestSearch ? 'No guests found' : 'No guests yet'}
+                              </div>
                             )}
                           </CommandEmpty>
                           {guests.length > 0 && (
-                            <CommandGroup heading="Guests">
+                            <CommandGroup heading={guestSearch ? 'Search Results' : 'Recent Guests'}>
                               {guests.map((guest) => (
                                 <CommandItem
                                   key={guest.id}
