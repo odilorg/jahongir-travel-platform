@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 
@@ -9,6 +9,28 @@ export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createReviewDto: CreateReviewDto) {
+    // Check for duplicate reviews (prevent multiple reviews from same person for same tour)
+    // Use 24-hour window for reviews (less likely to legitimately submit multiple)
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const existingReview = await this.prisma.review.findFirst({
+      where: {
+        tourId: createReviewDto.tourId,
+        email: createReviewDto.email.toLowerCase(),
+        createdAt: { gte: twentyFourHoursAgo },
+        isSpam: false,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (existingReview) {
+      this.logger.warn(
+        `Duplicate review detected from ${createReviewDto.email} for tour ${createReviewDto.tourId}`,
+      );
+      throw new BadRequestException(
+        'You have already submitted a review for this tour recently. Please wait 24 hours before submitting another review.',
+      );
+    }
+
     const review = await this.prisma.review.create({
       data: {
         ...createReviewDto,

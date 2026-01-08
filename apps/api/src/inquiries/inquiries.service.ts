@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInquiryDto } from './dto/create-inquiry.dto';
 
@@ -9,6 +9,33 @@ export class InquiriesService {
   constructor(private prisma: PrismaService) {}
 
   async create(createInquiryDto: CreateInquiryDto) {
+    // Check for duplicate inquiry submissions (prevent double-click)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const duplicateWhere: any = {
+      email: createInquiryDto.email.toLowerCase(),
+      createdAt: { gte: fiveMinutesAgo },
+      status: { notIn: ['closed', 'converted'] },
+    };
+
+    // If tourId is provided, check for duplicate inquiry for the same tour
+    if (createInquiryDto.tourId) {
+      duplicateWhere.tourId = createInquiryDto.tourId;
+    }
+
+    const recentDuplicate = await this.prisma.tourInquiry.findFirst({
+      where: duplicateWhere,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (recentDuplicate) {
+      this.logger.warn(
+        `Duplicate inquiry detected from: ${createInquiryDto.email}${createInquiryDto.tourId ? ` for tour ${createInquiryDto.tourId}` : ''}`,
+      );
+      throw new BadRequestException(
+        'You have recently submitted an inquiry. Please wait a few minutes before submitting again.',
+      );
+    }
+
     const inquiry = await this.prisma.tourInquiry.create({
       data: {
         ...createInquiryDto,

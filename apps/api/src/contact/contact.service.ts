@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { EmailService } from '../email/email.service';
@@ -13,6 +13,26 @@ export class ContactService {
   ) {}
 
   async create(createContactDto: CreateContactDto) {
+    // Check for duplicate contact submissions (prevent double-click)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const recentDuplicate = await this.prisma.contact.findFirst({
+      where: {
+        email: createContactDto.email.toLowerCase(),
+        createdAt: { gte: fiveMinutesAgo },
+        status: { not: 'closed' },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (recentDuplicate) {
+      this.logger.warn(
+        `Duplicate contact submission detected from: ${createContactDto.email}`,
+      );
+      throw new BadRequestException(
+        'You have recently submitted a message. Please wait a few minutes before submitting again.',
+      );
+    }
+
     const contact = await this.prisma.contact.create({
       data: createContactDto,
     });
