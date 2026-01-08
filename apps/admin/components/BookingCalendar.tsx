@@ -223,12 +223,12 @@ export function BookingCalendar({ bookings, onBookingClick }: BookingCalendarPro
                             getStatusColor(booking.status)
                           )}
                           onClick={(e) => handleBookingClick(booking, e)}
-                          title={`${booking.tour.title} - ${booking.customerName} (${booking.numberOfPeople} pax)`}
+                          title={`${booking.tour?.title || 'No tour'} - ${booking.customerName} (${booking.numberOfPeople} pax)`}
                         >
                           <div className="font-medium truncate">
-                            {booking.tour.title.length > 15
-                              ? booking.tour.title.substring(0, 15) + '...'
-                              : booking.tour.title}
+                            {(booking.tour?.title || 'No tour').length > 15
+                              ? (booking.tour?.title || 'No tour').substring(0, 15) + '...'
+                              : (booking.tour?.title || 'No tour')}
                           </div>
                           <div className="flex items-center gap-1 text-[10px] opacity-75">
                             <Users className="h-2.5 w-2.5" />
