@@ -37,4 +37,8 @@ export class UpdateVehicleDto {
   @IsBoolean({ message: 'isActive must be a boolean' })
   @IsOptional()
   isActive?: boolean;
+
+  @IsOptional()
+  @IsString({ message: 'Driver ID must be a string' })
+  driverId?: string;
 }
