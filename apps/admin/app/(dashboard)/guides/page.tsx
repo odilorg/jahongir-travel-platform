@@ -8,6 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   User,
   Phone,
   Mail,
@@ -22,9 +29,25 @@ import {
   Users,
   UserCheck,
   UserX,
+  Building2,
+  DollarSign,
+  Trash2,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+
+interface SupplierCompany {
+  id: string;
+  name: string;
+}
+
+interface GuideRate {
+  id: string;
+  serviceType: string;
+  amount: number;
+  currency: string;
+  notes?: string;
+}
 
 interface Guide {
   id: string;
@@ -35,8 +58,12 @@ interface Guide {
   notes?: string;
   isActive: boolean;
   createdAt: string;
+  companyId?: string;
+  company?: SupplierCompany;
+  rates?: GuideRate[];
   _count?: {
     bookings: number;
+    rates: number;
   };
 }
 
@@ -93,6 +120,12 @@ const LANGUAGES = [
   { code: 'ko', label: 'Korean' },
 ];
 
+const SERVICE_TYPES = [
+  { code: 'half_day', label: 'Half Day (4h)' },
+  { code: 'full_day', label: 'Full Day (8h)' },
+  { code: 'multi_day', label: 'Multi-Day (per day)' },
+];
+
 export default function GuidesPage() {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -110,12 +143,20 @@ export default function GuidesPage() {
     email: '',
     languages: [] as string[],
     notes: '',
+    companyId: '',
   });
   const [saving, setSaving] = useState(false);
+  const [companies, setCompanies] = useState<SupplierCompany[]>([]);
+
+  // Rate management state
+  const [guideRates, setGuideRates] = useState<GuideRate[]>([]);
+  const [newRate, setNewRate] = useState({ serviceType: '', amount: '', currency: 'USD' });
+  const [savingRate, setSavingRate] = useState(false);
 
   useEffect(() => {
     fetchGuides();
     fetchStats();
+    fetchCompanies();
   }, [page]);
 
   useEffect(() => {
@@ -153,11 +194,64 @@ export default function GuidesPage() {
     }
   };
 
+  const fetchCompanies = async () => {
+    try {
+      const response = await api.get<{ data: SupplierCompany[] }>('/supplier-companies?limit=100&isActive=true');
+      setCompanies(response.data || []);
+    } catch (error: any) {
+      console.error('Companies fetch error:', error);
+    }
+  };
+
+  const fetchGuideRates = async (guideId: string) => {
+    try {
+      const rates = await api.get<GuideRate[]>(`/guides/${guideId}/rates`);
+      setGuideRates(rates || []);
+    } catch (error: any) {
+      console.error('Rates fetch error:', error);
+    }
+  };
+
+  const handleAddRate = async (guideId: string) => {
+    if (!newRate.serviceType || !newRate.amount) {
+      toast.error('Please fill in service type and amount');
+      return;
+    }
+    setSavingRate(true);
+    try {
+      await api.post(`/guides/${guideId}/rates`, {
+        serviceType: newRate.serviceType,
+        amount: parseFloat(newRate.amount),
+        currency: newRate.currency,
+      });
+      toast.success('Rate added successfully');
+      setNewRate({ serviceType: '', amount: '', currency: 'USD' });
+      fetchGuideRates(guideId);
+      fetchGuides();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to add rate');
+    } finally {
+      setSavingRate(false);
+    }
+  };
+
+  const handleDeleteRate = async (guideId: string, rateId: string) => {
+    try {
+      await api.delete(`/guides/${guideId}/rates/${rateId}`);
+      toast.success('Rate deleted');
+      fetchGuideRates(guideId);
+      fetchGuides();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete rate');
+    }
+  };
+
   const viewGuideDetails = async (guideId: string) => {
     setLoadingGuide(true);
     try {
       const guide = await api.get<GuideWithBookings>(`/guides/${guideId}`);
       setSelectedGuide(guide);
+      fetchGuideRates(guideId);
     } catch (error: any) {
       toast.error('Failed to load guide details');
     } finally {
@@ -167,7 +261,7 @@ export default function GuidesPage() {
 
   const openCreateForm = () => {
     setEditingGuide(null);
-    setFormData({ name: '', phone: '', email: '', languages: [], notes: '' });
+    setFormData({ name: '', phone: '', email: '', languages: [], notes: '', companyId: '' });
     setShowForm(true);
   };
 
@@ -179,7 +273,11 @@ export default function GuidesPage() {
       email: guide.email || '',
       languages: guide.languages || [],
       notes: guide.notes || '',
+      companyId: guide.companyId || '',
     });
+    if (guide.id) {
+      fetchGuideRates(guide.id);
+    }
     setShowForm(true);
   };
 
@@ -237,6 +335,10 @@ export default function GuidesPage() {
     return LANGUAGES.find(l => l.code === code)?.label || code;
   };
 
+  const getServiceTypeLabel = (code: string) => {
+    return SERVICE_TYPES.find(s => s.code === code)?.label || code;
+  };
+
   const GuideCard = ({ guide }: { guide: Guide }) => (
     <Card className={`hover:shadow-md transition-shadow ${!guide.isActive ? 'opacity-60' : ''}`}>
       <CardContent className="p-6">
@@ -248,6 +350,14 @@ export default function GuidesPage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-lg">{guide.name}</h3>
+                {guide.company ? (
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    <Building2 className="h-3 w-3 mr-1" />
+                    {guide.company.name}
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="bg-green-50 text-green-700">Freelancer</Badge>
+                )}
                 {!guide.isActive && (
                   <Badge variant="secondary" className="bg-gray-100 text-gray-600">Inactive</Badge>
                 )}
@@ -268,6 +378,12 @@ export default function GuidesPage() {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Languages className="h-4 w-4" />
                   <span>{guide.languages.map(getLanguageLabel).join(', ')}</span>
+                </div>
+              )}
+              {!guide.company && guide._count?.rates !== undefined && guide._count.rates > 0 && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <DollarSign className="h-4 w-4" />
+                  <span>{guide._count.rates} rate(s) configured</span>
                 </div>
               )}
             </div>
@@ -493,6 +609,29 @@ export default function GuidesPage() {
                 </div>
 
                 <div>
+                  <Label htmlFor="companyId">Company (optional)</Label>
+                  <Select
+                    value={formData.companyId || 'freelancer'}
+                    onValueChange={(value) => setFormData({ ...formData, companyId: value === 'freelancer' ? '' : value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select company or leave as freelancer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="freelancer">Freelancer (No Company)</SelectItem>
+                      {companies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formData.companyId ? 'Company workers use contract rates' : 'Freelancers set their own rates'}
+                  </p>
+                </div>
+
+                <div>
                   <Label>Languages Spoken</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {LANGUAGES.map((lang) => (
@@ -517,6 +656,98 @@ export default function GuidesPage() {
                     rows={3}
                   />
                 </div>
+
+                {/* Rate Management Section (for freelancers only, when editing) */}
+                {editingGuide && !formData.companyId && (
+                  <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-green-600" />
+                      <Label className="text-sm font-semibold">Freelancer Rates</Label>
+                    </div>
+
+                    {/* Existing Rates */}
+                    {guideRates.length > 0 && (
+                      <div className="space-y-2">
+                        {guideRates.map((rate) => (
+                          <div key={rate.id} className="flex items-center justify-between bg-white p-2 rounded border">
+                            <div>
+                              <span className="font-medium">{getServiceTypeLabel(rate.serviceType)}</span>
+                              <span className="text-muted-foreground ml-2">
+                                {rate.amount} {rate.currency}
+                              </span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteRate(editingGuide.id, rate.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Add New Rate */}
+                    <div className="flex gap-2 items-end">
+                      <div className="flex-1">
+                        <Label className="text-xs">Service Type</Label>
+                        <Select
+                          value={newRate.serviceType}
+                          onValueChange={(value) => setNewRate({ ...newRate, serviceType: value })}
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="Select service" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SERVICE_TYPES.filter(st => !guideRates.find(r => r.serviceType === st.code)).map((st) => (
+                              <SelectItem key={st.code} value={st.code}>
+                                {st.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="w-24">
+                        <Label className="text-xs">Amount</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={newRate.amount}
+                          onChange={(e) => setNewRate({ ...newRate, amount: e.target.value })}
+                          placeholder="0.00"
+                          className="h-9"
+                        />
+                      </div>
+                      <div className="w-20">
+                        <Label className="text-xs">Currency</Label>
+                        <Select
+                          value={newRate.currency}
+                          onValueChange={(value) => setNewRate({ ...newRate, currency: value })}
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="USD">USD</SelectItem>
+                            <SelectItem value="UZS">UZS</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => handleAddRate(editingGuide.id)}
+                        disabled={savingRate || !newRate.serviceType || !newRate.amount}
+                        className="h-9"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="flex-1">
@@ -543,7 +774,17 @@ export default function GuidesPage() {
                     <User className="h-7 w-7 text-green-600" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold">{selectedGuide.name}</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold">{selectedGuide.name}</h2>
+                      {selectedGuide.company ? (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          <Building2 className="h-3 w-3 mr-1" />
+                          {selectedGuide.company.name}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="bg-green-50 text-green-700">Freelancer</Badge>
+                      )}
+                    </div>
                     {selectedGuide.email && <p className="text-muted-foreground">{selectedGuide.email}</p>}
                   </div>
                 </div>
@@ -584,6 +825,28 @@ export default function GuidesPage() {
                   <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm">{selectedGuide.notes}</div>
                 )}
               </div>
+
+              {/* Rates Section (for freelancers) */}
+              {!selectedGuide.company && (
+                <div className="mb-6">
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-green-600" />
+                    Rates
+                  </h3>
+                  {guideRates.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">No rates configured</p>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {guideRates.map((rate) => (
+                        <div key={rate.id} className="bg-green-50 p-2 rounded-lg">
+                          <div className="text-xs text-muted-foreground">{getServiceTypeLabel(rate.serviceType)}</div>
+                          <div className="font-semibold text-green-700">{rate.amount} {rate.currency}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Assignment History */}
               <div>

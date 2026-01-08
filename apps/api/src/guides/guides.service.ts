@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGuideDto } from './dto/create-guide.dto';
 import { UpdateGuideDto } from './dto/update-guide.dto';
+import { CreateGuideRateDto } from './dto/guide-rate.dto';
 
 @Injectable()
 export class GuidesService {
@@ -17,6 +18,16 @@ export class GuidesService {
    * Create a new guide
    */
   async create(createGuideDto: CreateGuideDto) {
+    // Verify company exists if provided
+    if (createGuideDto.companyId) {
+      const company = await this.prisma.supplierCompany.findUnique({
+        where: { id: createGuideDto.companyId },
+      });
+      if (!company) {
+        throw new NotFoundException('Supplier company not found');
+      }
+    }
+
     const guide = await this.prisma.guide.create({
       data: {
         name: createGuideDto.name,
@@ -24,6 +35,15 @@ export class GuidesService {
         email: createGuideDto.email,
         languages: createGuideDto.languages || [],
         notes: createGuideDto.notes,
+        companyId: createGuideDto.companyId,
+      },
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
@@ -39,10 +59,12 @@ export class GuidesService {
     search?: string;
     language?: string;
     isActive?: boolean;
+    companyId?: string;
+    freelancersOnly?: boolean;
     page?: number;
     limit?: number;
   }) {
-    const { search, language, isActive, page = 1, limit = 20 } = options || {};
+    const { search, language, isActive, companyId, freelancersOnly, page = 1, limit = 20 } = options || {};
 
     const where: any = {};
 
@@ -64,6 +86,16 @@ export class GuidesService {
       where.languages = { has: language };
     }
 
+    // Filter by company
+    if (companyId) {
+      where.companyId = companyId;
+    }
+
+    // Filter freelancers only (no company)
+    if (freelancersOnly) {
+      where.companyId = null;
+    }
+
     const [guides, total] = await Promise.all([
       this.prisma.guide.findMany({
         where,
@@ -71,8 +103,14 @@ export class GuidesService {
         skip: (page - 1) * limit,
         take: limit,
         include: {
+          company: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           _count: {
-            select: { bookings: true },
+            select: { bookings: true, rates: true },
           },
         },
       }),
@@ -99,6 +137,17 @@ export class GuidesService {
     const guide = await this.prisma.guide.findUnique({
       where: { id },
       include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+            contactPerson: true,
+            phone: true,
+          },
+        },
+        rates: {
+          orderBy: { serviceType: 'asc' },
+        },
         bookings: {
           include: {
             booking: {
@@ -123,7 +172,7 @@ export class GuidesService {
           take: 20, // Last 20 assignments
         },
         _count: {
-          select: { bookings: true },
+          select: { bookings: true, rates: true },
         },
       },
     });
@@ -147,15 +196,40 @@ export class GuidesService {
       throw new NotFoundException('Guide not found');
     }
 
+    const { companyId, ...guideData } = updateGuideDto;
+
+    // Verify company exists if changing company
+    if (companyId !== undefined && companyId !== null && companyId !== '') {
+      const company = await this.prisma.supplierCompany.findUnique({
+        where: { id: companyId },
+      });
+      if (!company) {
+        throw new NotFoundException('Supplier company not found');
+      }
+    }
+
     const updated = await this.prisma.guide.update({
       where: { id },
       data: {
-        ...(updateGuideDto.name && { name: updateGuideDto.name }),
-        ...(updateGuideDto.phone !== undefined && { phone: updateGuideDto.phone }),
-        ...(updateGuideDto.email !== undefined && { email: updateGuideDto.email }),
-        ...(updateGuideDto.languages && { languages: updateGuideDto.languages }),
-        ...(updateGuideDto.notes !== undefined && { notes: updateGuideDto.notes }),
-        ...(updateGuideDto.isActive !== undefined && { isActive: updateGuideDto.isActive }),
+        ...(guideData.name && { name: guideData.name }),
+        ...(guideData.phone !== undefined && { phone: guideData.phone }),
+        ...(guideData.email !== undefined && { email: guideData.email }),
+        ...(guideData.languages && { languages: guideData.languages }),
+        ...(guideData.notes !== undefined && { notes: guideData.notes }),
+        ...(guideData.isActive !== undefined && { isActive: guideData.isActive }),
+        // Handle companyId - allow setting to null (freelancer) or a valid company
+        ...(companyId !== undefined && { companyId: companyId || null }),
+      },
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        rates: {
+          orderBy: { serviceType: 'asc' },
+        },
       },
     });
 
@@ -222,5 +296,90 @@ export class GuidesService {
         assignmentCount: g._count.bookings,
       })),
     };
+  }
+
+  // ==================== Rate Management ====================
+
+  /**
+   * Get all rates for a guide
+   */
+  async getRates(guideId: string) {
+    const guide = await this.prisma.guide.findUnique({
+      where: { id: guideId },
+    });
+
+    if (!guide) {
+      throw new NotFoundException('Guide not found');
+    }
+
+    const rates = await this.prisma.guideRate.findMany({
+      where: { guideId },
+      orderBy: { serviceType: 'asc' },
+    });
+
+    return rates;
+  }
+
+  /**
+   * Create or update a rate for a guide
+   */
+  async upsertRate(guideId: string, rateDto: CreateGuideRateDto) {
+    const guide = await this.prisma.guide.findUnique({
+      where: { id: guideId },
+    });
+
+    if (!guide) {
+      throw new NotFoundException('Guide not found');
+    }
+
+    // Use upsert with unique constraint on guideId + serviceType
+    const rate = await this.prisma.guideRate.upsert({
+      where: {
+        guideId_serviceType: {
+          guideId,
+          serviceType: rateDto.serviceType,
+        },
+      },
+      update: {
+        amount: rateDto.amount,
+        currency: rateDto.currency || 'USD',
+        notes: rateDto.notes,
+      },
+      create: {
+        guideId,
+        serviceType: rateDto.serviceType,
+        amount: rateDto.amount,
+        currency: rateDto.currency || 'USD',
+        notes: rateDto.notes,
+      },
+    });
+
+    this.logger.log(`Guide ${guideId} rate ${rateDto.serviceType} set to ${rateDto.amount}`);
+
+    return rate;
+  }
+
+  /**
+   * Delete a rate for a guide
+   */
+  async deleteRate(guideId: string, rateId: string) {
+    const rate = await this.prisma.guideRate.findFirst({
+      where: {
+        id: rateId,
+        guideId,
+      },
+    });
+
+    if (!rate) {
+      throw new NotFoundException('Guide rate not found');
+    }
+
+    await this.prisma.guideRate.delete({
+      where: { id: rateId },
+    });
+
+    this.logger.log(`Guide ${guideId} rate ${rateId} deleted`);
+
+    return { message: 'Rate deleted successfully' };
   }
 }

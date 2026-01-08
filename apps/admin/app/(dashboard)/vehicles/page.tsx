@@ -140,7 +140,7 @@ export default function VehiclesPage() {
           v.plateNumber.toLowerCase().includes(searchLower) ||
           v.make.toLowerCase().includes(searchLower) ||
           v.model.toLowerCase().includes(searchLower) ||
-          v.driver.name.toLowerCase().includes(searchLower)
+          (v.drivers && v.drivers.length > 0 && v.drivers.some(dv => dv.driver.name.toLowerCase().includes(searchLower)))
         );
       }
 

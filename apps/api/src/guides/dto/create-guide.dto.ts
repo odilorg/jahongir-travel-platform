@@ -38,4 +38,8 @@ export class CreateGuideDto {
   @MaxLength(2000, { message: 'Notes cannot exceed 2000 characters' })
   @IsOptional()
   notes?: string;
+
+  @IsString({ message: 'Company ID must be a string' })
+  @IsOptional()
+  companyId?: string;
 }

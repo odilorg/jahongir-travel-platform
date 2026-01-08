@@ -47,4 +47,8 @@ export class UpdateDriverDto {
   @IsString({ message: 'Vehicle ID must be a string' })
   @IsOptional()
   vehicleId?: string;
+
+  @IsString({ message: 'Company ID must be a string' })
+  @IsOptional()
+  companyId?: string;
 }

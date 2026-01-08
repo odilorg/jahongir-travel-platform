@@ -44,4 +44,8 @@ export class UpdateGuideDto {
   @IsBoolean({ message: 'isActive must be a boolean' })
   @IsOptional()
   isActive?: boolean;
+
+  @IsString({ message: 'Company ID must be a string' })
+  @IsOptional()
+  companyId?: string;
 }

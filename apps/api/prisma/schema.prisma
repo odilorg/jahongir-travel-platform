@@ -704,6 +704,79 @@ model Lead {
 }
 
 // ============================================================================
+// SUPPLIER COMPANIES (Agencies that employ guides/drivers)
+// ============================================================================
+
+model SupplierCompany {
+  id              String    @id @default(cuid())
+  name            String
+  contactPerson   String?
+  phone           String?
+  email           String?
+  address         String?   @db.Text
+  notes           String?   @db.Text
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  drivers         Driver[]
+  guides          Guide[]
+  contracts       SupplierContract[]
+
+  @@index([name])
+  @@index([isActive])
+}
+
+// Contract with supplier company (can have multiple over time)
+model SupplierContract {
+  id              String    @id @default(cuid())
+  companyId       String
+
+  // Contract period
+  startDate       DateTime
+  endDate         DateTime?
+  status          String    @default("active") // "active", "expired", "pending", "terminated"
+
+  // Contract details
+  terms           String?   @db.Text
+  notes           String?   @db.Text
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  company         SupplierCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  rates           ContractRate[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+// Contract rates (prices defined in the contract)
+model ContractRate {
+  id              String    @id @default(cuid())
+  contractId      String
+  supplierType    String    // "driver" or "guide"
+  serviceType     String    // "airport_transfer", "half_day", "full_day", "multi_day", "per_km"
+  amount          Decimal   @db.Decimal(10, 2)
+  currency        String    @default("USD") // "USD", "UZS"
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  contract        SupplierContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@unique([contractId, supplierType, serviceType])
+  @@index([contractId])
+  @@index([supplierType])
+  @@index([serviceType])
+}
+
+// ============================================================================
 // GUIDES & DRIVERS (Tour Staff)
 // ============================================================================
 
@@ -716,13 +789,38 @@ model Guide {
   notes           String?   @db.Text
   isActive        Boolean   @default(true)
 
+  // Company affiliation (null = freelancer)
+  companyId       String?
+  company         SupplierCompany? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   bookings        BookingGuide[]
+  rates           GuideRate[]
 
   @@index([isActive])
   @@index([name])
+  @@index([companyId])
+}
+
+// Individual guide rates (used when guide is freelancer or company has no rate defined)
+model GuideRate {
+  id              String    @id @default(cuid())
+  guideId         String
+  serviceType     String    // "half_day", "full_day", "multi_day"
+  amount          Decimal   @db.Decimal(10, 2)
+  currency        String    @default("USD")
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  guide           Guide     @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@unique([guideId, serviceType])
+  @@index([guideId])
+  @@index([serviceType])
 }
 
 model Driver {
@@ -734,14 +832,39 @@ model Driver {
   notes           String?   @db.Text
   isActive        Boolean   @default(true)
 
+  // Company affiliation (null = freelancer)
+  companyId       String?
+  company         SupplierCompany? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   bookings        BookingDriver[]
   vehicles        DriverVehicle[]
+  rates           DriverRate[]
 
   @@index([isActive])
   @@index([name])
+  @@index([companyId])
+}
+
+// Individual driver rates (used when driver is freelancer or company has no rate defined)
+model DriverRate {
+  id              String    @id @default(cuid())
+  driverId        String
+  serviceType     String    // "airport_transfer", "half_day", "full_day", "multi_day", "per_km"
+  amount          Decimal   @db.Decimal(10, 2)
+  currency        String    @default("USD")
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  driver          Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, serviceType])
+  @@index([driverId])
+  @@index([serviceType])
 }
 
 model Vehicle {

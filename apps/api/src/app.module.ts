@@ -16,6 +16,8 @@ import { GuestsModule } from './guests/guests.module';
 import { GuidesModule } from './guides/guides.module';
 import { DriversModule } from './drivers/drivers.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
+import { SupplierCompaniesModule } from './supplier-companies/supplier-companies.module';
+import { ContractsModule } from './contracts/contracts.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { UploadsModule } from './uploads/uploads.module';
@@ -61,6 +63,8 @@ import { TranslationCoverageService } from './common/services/translation-covera
     GuidesModule,
     DriversModule,
     VehiclesModule,
+    SupplierCompaniesModule,
+    ContractsModule,
     UploadsModule,
     EmailModule,
     HealthModule,

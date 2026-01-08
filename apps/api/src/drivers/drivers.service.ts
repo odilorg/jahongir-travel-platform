@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
+import { CreateDriverRateDto } from './dto/driver-rate.dto';
 
 @Injectable()
 export class DriversService {
@@ -17,6 +18,16 @@ export class DriversService {
    * Create a new driver
    */
   async create(createDriverDto: CreateDriverDto) {
+    // Verify company exists if provided
+    if (createDriverDto.companyId) {
+      const company = await this.prisma.supplierCompany.findUnique({
+        where: { id: createDriverDto.companyId },
+      });
+      if (!company) {
+        throw new NotFoundException('Supplier company not found');
+      }
+    }
+
     const driver = await this.prisma.driver.create({
       data: {
         name: createDriverDto.name,
@@ -24,6 +35,15 @@ export class DriversService {
         licenseNumber: createDriverDto.licenseNumber,
         languages: createDriverDto.languages || [],
         notes: createDriverDto.notes,
+        companyId: createDriverDto.companyId,
+      },
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
@@ -39,10 +59,12 @@ export class DriversService {
     search?: string;
     language?: string;
     isActive?: boolean;
+    companyId?: string;
+    freelancersOnly?: boolean;
     page?: number;
     limit?: number;
   }) {
-    const { search, language, isActive, page = 1, limit = 20 } = options || {};
+    const { search, language, isActive, companyId, freelancersOnly, page = 1, limit = 20 } = options || {};
 
     const where: any = {};
 
@@ -64,6 +86,16 @@ export class DriversService {
       where.languages = { has: language };
     }
 
+    // Filter by company
+    if (companyId) {
+      where.companyId = companyId;
+    }
+
+    // Filter freelancers only (no company)
+    if (freelancersOnly) {
+      where.companyId = null;
+    }
+
     const [drivers, total] = await Promise.all([
       this.prisma.driver.findMany({
         where,
@@ -71,6 +103,12 @@ export class DriversService {
         skip: (page - 1) * limit,
         take: limit,
         include: {
+          company: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           vehicles: {
             include: {
               vehicle: {
@@ -86,7 +124,7 @@ export class DriversService {
             orderBy: { isPrimary: 'desc' },
           },
           _count: {
-            select: { bookings: true },
+            select: { bookings: true, rates: true },
           },
         },
       }),
@@ -113,6 +151,17 @@ export class DriversService {
     const driver = await this.prisma.driver.findUnique({
       where: { id },
       include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+            contactPerson: true,
+            phone: true,
+          },
+        },
+        rates: {
+          orderBy: { serviceType: 'asc' },
+        },
         vehicles: {
           include: {
             vehicle: {
@@ -151,7 +200,7 @@ export class DriversService {
           take: 20, // Last 20 assignments
         },
         _count: {
-          select: { bookings: true },
+          select: { bookings: true, rates: true },
         },
       },
     });
@@ -175,8 +224,18 @@ export class DriversService {
       throw new NotFoundException('Driver not found');
     }
 
-    // Extract vehicleId for separate handling
-    const { vehicleId, ...driverData } = updateDriverDto;
+    // Extract vehicleId and companyId for separate handling
+    const { vehicleId, companyId, ...driverData } = updateDriverDto;
+
+    // Verify company exists if changing company
+    if (companyId !== undefined && companyId !== null && companyId !== '') {
+      const company = await this.prisma.supplierCompany.findUnique({
+        where: { id: companyId },
+      });
+      if (!company) {
+        throw new NotFoundException('Supplier company not found');
+      }
+    }
 
     // Handle vehicle assignment update if vehicleId is provided
     if (vehicleId !== undefined) {
@@ -212,8 +271,19 @@ export class DriversService {
         ...(driverData.languages && { languages: driverData.languages }),
         ...(driverData.notes !== undefined && { notes: driverData.notes }),
         ...(driverData.isActive !== undefined && { isActive: driverData.isActive }),
+        // Handle companyId - allow setting to null (freelancer) or a valid company
+        ...(companyId !== undefined && { companyId: companyId || null }),
       },
       include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        rates: {
+          orderBy: { serviceType: 'asc' },
+        },
         vehicles: {
           include: {
             vehicle: {
@@ -294,5 +364,90 @@ export class DriversService {
         assignmentCount: d._count.bookings,
       })),
     };
+  }
+
+  // ==================== Rate Management ====================
+
+  /**
+   * Get all rates for a driver
+   */
+  async getRates(driverId: string) {
+    const driver = await this.prisma.driver.findUnique({
+      where: { id: driverId },
+    });
+
+    if (!driver) {
+      throw new NotFoundException('Driver not found');
+    }
+
+    const rates = await this.prisma.driverRate.findMany({
+      where: { driverId },
+      orderBy: { serviceType: 'asc' },
+    });
+
+    return rates;
+  }
+
+  /**
+   * Create or update a rate for a driver
+   */
+  async upsertRate(driverId: string, rateDto: CreateDriverRateDto) {
+    const driver = await this.prisma.driver.findUnique({
+      where: { id: driverId },
+    });
+
+    if (!driver) {
+      throw new NotFoundException('Driver not found');
+    }
+
+    // Use upsert with unique constraint on driverId + serviceType
+    const rate = await this.prisma.driverRate.upsert({
+      where: {
+        driverId_serviceType: {
+          driverId,
+          serviceType: rateDto.serviceType,
+        },
+      },
+      update: {
+        amount: rateDto.amount,
+        currency: rateDto.currency || 'USD',
+        notes: rateDto.notes,
+      },
+      create: {
+        driverId,
+        serviceType: rateDto.serviceType,
+        amount: rateDto.amount,
+        currency: rateDto.currency || 'USD',
+        notes: rateDto.notes,
+      },
+    });
+
+    this.logger.log(`Driver ${driverId} rate ${rateDto.serviceType} set to ${rateDto.amount}`);
+
+    return rate;
+  }
+
+  /**
+   * Delete a rate for a driver
+   */
+  async deleteRate(driverId: string, rateId: string) {
+    const rate = await this.prisma.driverRate.findFirst({
+      where: {
+        id: rateId,
+        driverId,
+      },
+    });
+
+    if (!rate) {
+      throw new NotFoundException('Driver rate not found');
+    }
+
+    await this.prisma.driverRate.delete({
+      where: { id: rateId },
+    });
+
+    this.logger.log(`Driver ${driverId} rate ${rateId} deleted`);
+
+    return { message: 'Rate deleted successfully' };
   }
 }
