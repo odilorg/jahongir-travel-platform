@@ -8,13 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Car,
   Phone,
   Languages,
@@ -113,7 +106,6 @@ const LANGUAGES = [
 
 export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -127,7 +119,6 @@ export default function DriversPage() {
     name: '',
     phone: '',
     licenseNumber: '',
-    vehicleId: '',
     languages: [] as string[],
     notes: '',
   });
@@ -136,7 +127,6 @@ export default function DriversPage() {
   useEffect(() => {
     fetchDrivers();
     fetchStats();
-    fetchVehicles();
   }, [page]);
 
   useEffect(() => {
@@ -174,15 +164,6 @@ export default function DriversPage() {
     }
   };
 
-  const fetchVehicles = async () => {
-    try {
-      const response = await api.get<{ data: Vehicle[] }>('/vehicles?limit=100');
-      setVehicles(response.data);
-    } catch (error: any) {
-      console.error('Vehicles fetch error:', error);
-    }
-  };
-
   const viewDriverDetails = async (driverId: string) => {
     setLoadingDriver(true);
     try {
@@ -197,7 +178,7 @@ export default function DriversPage() {
 
   const openCreateForm = () => {
     setEditingDriver(null);
-    setFormData({ name: '', phone: '', licenseNumber: '', vehicleId: '', languages: [], notes: '' });
+    setFormData({ name: '', phone: '', licenseNumber: '', languages: [], notes: '' });
     setShowForm(true);
   };
 
@@ -207,7 +188,6 @@ export default function DriversPage() {
       name: driver.name,
       phone: driver.phone || '',
       licenseNumber: driver.licenseNumber || '',
-      vehicleId: driver.vehicles?.[0]?.vehicleId || '',
       languages: driver.languages || [],
       notes: driver.notes || '',
     });
@@ -527,40 +507,6 @@ export default function DriversPage() {
                     onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
                     placeholder="e.g., AB1234567"
                   />
-                </div>
-
-                <div>
-                  <Label htmlFor="vehicleId">Assigned Vehicle</Label>
-                  <Select
-                    value={formData.vehicleId || 'none'}
-                    onValueChange={(value) => setFormData({ ...formData, vehicleId: value === 'none' ? '' : value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select vehicle (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No vehicle assigned</SelectItem>
-                      {vehicles
-                        .filter((vehicle) => {
-                          // Show vehicle if:
-                          // 1. It's the one currently assigned to this driver, OR
-                          // 2. It's not assigned to any other driver
-                          const currentDriverVehicleId = editingDriver?.vehicles?.[0]?.vehicleId;
-                          if (vehicle.id === currentDriverVehicleId) return true;
-
-                          // Check if vehicle is assigned to another driver
-                          const isAssignedToOther = drivers.some(
-                            (d) => d.id !== editingDriver?.id && d.vehicles?.some((v) => v.vehicleId === vehicle.id)
-                          );
-                          return !isAssignedToOther;
-                        })
-                        .map((vehicle) => (
-                          <SelectItem key={vehicle.id} value={vehicle.id}>
-                            {vehicle.make} {vehicle.model} ({vehicle.plateNumber})
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <div>
