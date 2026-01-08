@@ -607,6 +607,300 @@ async function main() {
   console.log('✓ Sample blog post created with 3 languages');
 
   // ============================================================================
+  // 7. ADDITIONAL TOURS
+  // ============================================================================
+  console.log('\n🎯 Creating additional tours...');
+
+  const bukharaTour = await prisma.tour.create({
+    data: {
+      price: 399,
+      duration: 2,
+      maxGroupSize: 8,
+      difficulty: 'Easy',
+      categoryId: historicalCategory.id,
+      images: [
+        'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&h=800&fit=crop',
+      ],
+      isFeatured: true,
+      showPrice: true,
+      isActive: true,
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            title: 'Bukhara Heritage Experience',
+            slug: 'bukhara-heritage-experience',
+            summary: 'Discover the pearl of Central Asia with its ancient madrasahs and bazaars',
+            description: 'Step back in time in Bukhara, one of the best-preserved medieval cities in Central Asia. Explore ancient madrasahs, bustling bazaars, and stunning Islamic architecture.',
+            highlights: [
+              'UNESCO World Heritage old town',
+              'Ancient trading domes',
+              'Kalyan Minaret and Mosque',
+              'Traditional craft workshops',
+            ],
+          },
+          {
+            locale: Locale.ru,
+            title: 'Наследие Бухары',
+            slug: 'bukhara-heritage-experience',
+            summary: 'Откройте для себя жемчужину Центральной Азии с её древними медресе и базарами',
+            description: 'Вернитесь в прошлое в Бухаре, одном из наиболее хорошо сохранившихся средневековых городов Центральной Азии.',
+            highlights: [
+              'Старый город ЮНЕСКО',
+              'Древние торговые купола',
+              'Минарет и мечеть Калян',
+              'Традиционные ремесленные мастерские',
+            ],
+          },
+          {
+            locale: Locale.uz,
+            title: 'Buxoro merosi tajribasi',
+            slug: 'bukhara-heritage-experience',
+            summary: 'Qadimiy madrasa va bozorlar bilan Markaziy Osiyo marvaridini kashf eting',
+            description: 'Markaziy Osiyodagi eng yaxshi saqlanib qolgan o\'rta asr shaharlaridan biri bo\'lgan Buxoroda vaqtga qaytib boring.',
+            highlights: [
+              'UNESCO Jahon merosi eski shahar',
+              'Qadimiy savdo gumbazlari',
+              'Kalon minorasi va masjidi',
+              'An\'anaviy hunarmandchilik ustaxonalari',
+            ],
+          },
+        ],
+      },
+    },
+  });
+
+  const adventureTour = await prisma.tour.create({
+    data: {
+      price: 799,
+      duration: 7,
+      maxGroupSize: 10,
+      difficulty: 'Moderate',
+      categoryId: adventureCategory.id,
+      images: [
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop',
+      ],
+      isFeatured: false,
+      showPrice: true,
+      isActive: true,
+      translations: {
+        create: [
+          {
+            locale: Locale.en,
+            title: 'Trekking in the Chimgan Mountains',
+            slug: 'chimgan-mountains-trekking',
+            summary: 'Active adventure in the mountains near Tashkent',
+            description: 'Experience the natural beauty of Uzbekistan with hiking, trekking, and outdoor activities in the stunning Chimgan mountain range.',
+            highlights: [
+              'Mountain trekking routes',
+              'Camping under the stars',
+              'Local village homestays',
+              'Fresh mountain air',
+            ],
+          },
+          {
+            locale: Locale.ru,
+            title: 'Треккинг в горах Чимган',
+            slug: 'chimgan-mountains-trekking',
+            summary: 'Активное приключение в горах рядом с Ташкентом',
+            description: 'Испытайте природную красоту Узбекистана с пешими походами, треккингом и активным отдыхом в потрясающих горах Чимган.',
+            highlights: [
+              'Горные маршруты для треккинга',
+              'Кемпинг под звёздами',
+              'Проживание в местных деревнях',
+              'Свежий горный воздух',
+            ],
+          },
+          {
+            locale: Locale.uz,
+            title: 'Chimg\'on tog\'larida trekking',
+            slug: 'chimgan-mountains-trekking',
+            summary: 'Toshkent yaqinidagi tog\'larda faol sarguzasht',
+            description: 'Chimg\'on tog\' tizmasida piyoda sayohat, trekking va ochiq havoda faoliyat bilan O\'zbekistonning tabiat go\'zalligini his eting.',
+            highlights: [
+              'Tog\' trekking yo\'llari',
+              'Yulduzlar ostida lager',
+              'Mahalliy qishloq uylarida turar joy',
+              'Toza tog\' havosi',
+            ],
+          },
+        ],
+      },
+    },
+  });
+
+  console.log('✓ 2 additional tours created (3 total)');
+
+  // ============================================================================
+  // 8. GUESTS
+  // ============================================================================
+  console.log('\n👥 Creating sample guests...');
+
+  const guest1 = await prisma.guest.create({
+    data: {
+      email: 'john.smith@email.com',
+      name: 'John Smith',
+      phone: '+1-555-0101',
+      country: 'United States',
+      preferredLanguage: 'en',
+      totalBookings: 2,
+      totalSpent: 1098,
+      lastBookingAt: new Date('2025-11-15'),
+    },
+  });
+
+  const guest2 = await prisma.guest.create({
+    data: {
+      email: 'marie.dubois@email.fr',
+      name: 'Marie Dubois',
+      phone: '+33-6-12-34-56-78',
+      country: 'France',
+      preferredLanguage: 'en',
+      totalBookings: 1,
+      totalSpent: 549,
+      lastBookingAt: new Date('2025-12-20'),
+    },
+  });
+
+  const guest3 = await prisma.guest.create({
+    data: {
+      email: 'hans.mueller@email.de',
+      name: 'Hans Müller',
+      phone: '+49-172-123-4567',
+      country: 'Germany',
+      preferredLanguage: 'en',
+      totalBookings: 3,
+      totalSpent: 1647,
+      lastBookingAt: new Date('2026-01-05'),
+    },
+  });
+
+  console.log('✓ 3 guests created');
+
+  // ============================================================================
+  // 9. GUIDES
+  // ============================================================================
+  console.log('\n🎓 Creating tour guides...');
+
+  const guide1 = await prisma.guide.create({
+    data: {
+      name: 'Aziz Karimov',
+      phone: '+998-90-123-4567',
+      email: 'aziz.guide@jahongir-travel.uz',
+      languages: ['uz', 'ru', 'en'],
+      notes: 'Expert in Silk Road history. 15 years of guiding experience. Specializes in Samarkand and Bukhara tours.',
+      isActive: true,
+    },
+  });
+
+  const guide2 = await prisma.guide.create({
+    data: {
+      name: 'Dilnoza Sharipova',
+      phone: '+998-91-234-5678',
+      email: 'dilnoza.guide@jahongir-travel.uz',
+      languages: ['uz', 'ru', 'en', 'fr'],
+      notes: 'Certified cultural heritage specialist. Fluent in 4 languages. Excellent with family groups.',
+      isActive: true,
+    },
+  });
+
+  const guide3 = await prisma.guide.create({
+    data: {
+      name: 'Rustam Ibragimov',
+      phone: '+998-93-345-6789',
+      email: 'rustam.guide@jahongir-travel.uz',
+      languages: ['uz', 'ru', 'en', 'de'],
+      notes: 'Mountain trekking specialist. First aid certified. 10+ years experience in adventure tours.',
+      isActive: true,
+    },
+  });
+
+  console.log('✓ 3 guides created');
+
+  // ============================================================================
+  // 10. DRIVERS & VEHICLES
+  // ============================================================================
+  console.log('\n🚗 Creating drivers and vehicles...');
+
+  const driver1 = await prisma.driver.create({
+    data: {
+      name: 'Sardor Mahmudov',
+      phone: '+998-90-111-2222',
+      licenseNumber: 'AB1234567',
+      languages: ['uz', 'ru', 'en'],
+      notes: 'Professional driver with 20 years experience. Clean driving record. Excellent knowledge of routes.',
+      isActive: true,
+    },
+  });
+
+  const vehicle1 = await prisma.vehicle.create({
+    data: {
+      driverId: driver1.id,
+      plateNumber: '01-A-123-ABC',
+      make: 'Toyota',
+      model: 'Hiace',
+      year: 2022,
+      color: 'White',
+      capacity: 12,
+      type: 'minivan',
+      isActive: true,
+    },
+  });
+
+  const driver2 = await prisma.driver.create({
+    data: {
+      name: 'Bakhtiyar Rahimov',
+      phone: '+998-91-222-3333',
+      licenseNumber: 'AB2345678',
+      languages: ['uz', 'ru'],
+      notes: 'Experienced with long-distance routes. Comfortable, smooth driving style. Very punctual.',
+      isActive: true,
+    },
+  });
+
+  const vehicle2 = await prisma.vehicle.create({
+    data: {
+      driverId: driver2.id,
+      plateNumber: '01-B-456-DEF',
+      make: 'Mercedes-Benz',
+      model: 'Sprinter',
+      year: 2021,
+      color: 'Silver',
+      capacity: 15,
+      type: 'van',
+      isActive: true,
+    },
+  });
+
+  const driver3 = await prisma.driver.create({
+    data: {
+      name: 'Sherzod Alimov',
+      phone: '+998-93-333-4444',
+      licenseNumber: 'AB3456789',
+      languages: ['uz', 'ru', 'en'],
+      notes: 'Luxury vehicle specialist. VIP service experience. Speaks basic English.',
+      isActive: true,
+    },
+  });
+
+  const vehicle3 = await prisma.vehicle.create({
+    data: {
+      driverId: driver3.id,
+      plateNumber: '01-C-789-GHI',
+      make: 'Toyota',
+      model: 'Land Cruiser',
+      year: 2023,
+      color: 'Black',
+      capacity: 7,
+      type: 'suv',
+      isActive: true,
+    },
+  });
+
+  console.log('✓ 3 drivers created');
+  console.log('✓ 3 vehicles created');
+
+  // ============================================================================
   // SUMMARY
   // ============================================================================
   console.log('\n' + '='.repeat(60));
@@ -617,11 +911,15 @@ async function main() {
   console.log('  • 4 tour categories (12 translations total)');
   console.log('  • 4 cities (12 translations total)');
   console.log('  • 1 blog category (3 translations total)');
-  console.log('  • 1 sample tour (3 translations total)');
+  console.log('  • 3 tours (9 translations total)');
   console.log('  • 4 tour departures');
   console.log('  • 3 pricing tiers (9 translations total)');
   console.log('  • 4 tour FAQs (12 translations total)');
   console.log('  • 1 blog post (3 translations total)');
+  console.log('  • 3 guests');
+  console.log('  • 3 guides');
+  console.log('  • 3 drivers');
+  console.log('  • 3 vehicles');
   console.log('\n🌍 Languages: EN, RU, UZ');
   console.log('');
 }
