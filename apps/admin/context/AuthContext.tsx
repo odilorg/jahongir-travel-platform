@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       // Redirect to login page
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        window.location.href = '/admin/login';
       }
     }
   }, []);

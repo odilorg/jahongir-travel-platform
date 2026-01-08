@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search, Edit, Trash2, FileText, Calendar } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, FileText, Calendar, Eye } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -237,6 +237,16 @@ export default function BlogPage() {
 
                       {/* Actions */}
                       <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          asChild
+                        >
+                          <a href={`https://dev.jahongir-travel.uz/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </a>
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"

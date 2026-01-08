@@ -30,7 +30,7 @@ export default function DashboardLayout({
 
       // Redirect to login
       setTimeout(() => {
-        window.location.href = '/login';
+        window.location.href = '/admin/login';
       }, 100); // Small delay to show toast
     }
   }, [user, loading]);
