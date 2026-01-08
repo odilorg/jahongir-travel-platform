@@ -181,5 +181,27 @@
     "404": "Page not found",
     "500": "Internal server error",
     "network": "Network error. Please check your connection."
+  },
+  "ui": {
+    "reviews": {
+      "write_review": "Write a Review",
+      "share_experience": "Share your experience with this tour",
+      "rate_experience": "Rate your experience",
+      "summarize_experience": "Summarize your experience",
+      "summarize_placeholder": "Sum up your experience in a few words",
+      "share_feedback": "Share your feedback",
+      "share_placeholder": "Share your thoughts about this tour...",
+      "your_name": "Name",
+      "your_email": "Email",
+      "location": "Location",
+      "location_placeholder": "City, Country (optional)",
+      "booking_reference": "Booking Reference (for verification)",
+      "booking_reference_hint": "Enter your booking reference to verify your review",
+      "submit_review": "Submit Review",
+      "submitting": "Submitting...",
+      "select_rating": "Select a rating",
+      "required": "*",
+      "verified_guest": "Verified Guest"
+    }
   }
 }

@@ -181,5 +181,27 @@
     "404": "Страница не найдена",
     "500": "Внутренняя ошибка сервера",
     "network": "Ошибка сети. Проверьте подключение."
+  },
+  "ui": {
+    "reviews": {
+      "write_review": "Написать отзыв",
+      "share_experience": "Поделитесь своими впечатлениями об этом туре",
+      "rate_experience": "Оцените ваш опыт",
+      "summarize_experience": "Опишите кратко ваш опыт",
+      "summarize_placeholder": "Опишите ваш опыт в нескольких словах",
+      "share_feedback": "Поделитесь отзывом",
+      "share_placeholder": "Расскажите о вашем опыте в этом туре...",
+      "your_name": "Имя",
+      "your_email": "Email",
+      "location": "Местоположение",
+      "location_placeholder": "Город, Страна (необязательно)",
+      "booking_reference": "Номер бронирования (для проверки)",
+      "booking_reference_hint": "Введите номер бронирования для подтверждения отзыва",
+      "submit_review": "Отправить отзыв",
+      "submitting": "Отправка...",
+      "select_rating": "Выберите оценку",
+      "required": "*",
+      "verified_guest": "Проверенный гость"
+    }
   }
 }

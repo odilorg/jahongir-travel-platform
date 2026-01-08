@@ -181,5 +181,27 @@
     "404": "Sahifa topilmadi",
     "500": "Ichki server xatosi",
     "network": "Tarmoq xatosi. Ulanishni tekshiring."
+  },
+  "ui": {
+    "reviews": {
+      "write_review": "Sharh yozish",
+      "share_experience": "Ushbu tur haqida tajribangizni baham ko'ring",
+      "rate_experience": "Tajribangizni baholang",
+      "summarize_experience": "Tajribangizni qisqacha tavsiflang",
+      "summarize_placeholder": "Tajribangizni bir necha so'zda bayon qiling",
+      "share_feedback": "Fikr-mulohazangizni baham ko'ring",
+      "share_placeholder": "Ushbu tur haqidagi fikrlaringizni baham ko'ring...",
+      "your_name": "Ism",
+      "your_email": "Email",
+      "location": "Joylashuv",
+      "location_placeholder": "Shahar, Mamlakat (ixtiyoriy)",
+      "booking_reference": "Bron raqami (tasdiqlash uchun)",
+      "booking_reference_hint": "Sharhingizni tasdiqlash uchun bron raqamingizni kiriting",
+      "submit_review": "Sharhni yuborish",
+      "submitting": "Yuborilmoqda...",
+      "select_rating": "Bahoni tanlang",
+      "required": "*",
+      "verified_guest": "Tasdiqlangan mehmon"
+    }
   }
 }
