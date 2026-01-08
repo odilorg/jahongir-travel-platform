@@ -1,25 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php:*)",
-      "Bash(php artisan:*)",
-      "Bash(composer:*)",
-      "Bash(npm:*)",
-      "Bash(pnpm:*)",
-      "Bash(git:*)",
-      "Bash(pm2:*)",
-      "Bash(chmod:*)",
-      "Bash(chown:*)",
-      "Bash(mkdir:*)",
-      "Bash(rm:*)",
-      "Bash(cp:*)",
-      "Bash(mv:*)",
-      "Bash(ln:*)",
-      "Bash(touch:*)",
-      "Bash(cat:*)",
-      "Bash(ls:*)",
-      "Bash(curl:*)",
-      "Bash(wget:*)"
+      "Bash",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "Task",
+      "NotebookEdit"
     ],
     "deny": []
   }

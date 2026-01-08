@@ -10,6 +10,7 @@ import { GuestsService } from '../guests/guests.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto, UpdateBookingStatusDto, UpdatePaymentStatusDto } from './dto/update-booking.dto';
 import { Decimal } from '@prisma/client/runtime/library';
+import { getTranslationWithFallback, DEFAULT_LOCALE } from '../i18n';
 
 @Injectable()
 export class BookingsService {
@@ -246,8 +247,7 @@ export class BookingsService {
               id: true,
               duration: true,
               translations: {
-                where: { locale: 'en' },
-                take: 1,
+                where: { locale: { in: ['en', 'ru', 'uz'] } },
               },
             },
           },
@@ -267,8 +267,29 @@ export class BookingsService {
       this.prisma.booking.count({ where }),
     ]);
 
+    // Transform bookings to flatten tour translations
+    const transformedBookings = bookings.map((booking) => {
+      if (booking.tour) {
+        const translation = getTranslationWithFallback(
+          booking.tour.translations,
+          DEFAULT_LOCALE,
+        );
+
+        return {
+          ...booking,
+          tour: {
+            id: booking.tour.id,
+            duration: booking.tour.duration,
+            title: translation?.title || '',
+            slug: translation?.slug || '',
+          },
+        };
+      }
+      return booking;
+    });
+
     return {
-      data: bookings,
+      data: transformedBookings,
       meta: {
         total,
         page,

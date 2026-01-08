@@ -6,6 +6,24 @@
 
 ---
 
+## ⚠️ CRITICAL: LOCAL-ONLY DEVELOPMENT
+
+**This is a LOCAL development environment. DO NOT:**
+- ❌ Suggest SSH or VPS commands
+- ❌ Reference staging.jahongir-travel.uz (that's a DIFFERENT project)
+- ❌ Suggest deploying to VPS
+- ❌ Use any remote server paths
+
+**ALWAYS:**
+- ✅ Work in `/home/odil/projects/jahongir-travel-platform/`
+- ✅ Use Docker for local services (PostgreSQL, Redis, MailDev)
+- ✅ Test on localhost:3000, localhost:3001, localhost:4000
+- ✅ Use `pnpm dev` to start development servers
+
+**The VPS staging site is a separate Laravel project managed by a different Telegram bot.**
+
+---
+
 ## 📊 Project Overview
 
 **What:** Modern travel platform for Uzbekistan tourism
@@ -44,8 +62,8 @@
 ### Infrastructure
 - **Monorepo:** Turborepo + pnpm workspaces
 - **Node:** 20.x LTS
-- **Containers:** Docker Compose (Postgres, Redis, MailHog)
-- **Production:** VPS (TBD)
+- **Containers:** Docker Compose (Postgres, Redis, MailDev)
+- **Environment:** LOCAL DEVELOPMENT ONLY
 
 ---
 
@@ -169,11 +187,10 @@ User           // Admin users (authentication)
 - Prisma Studio: http://localhost:5555
 - MailHog: http://localhost:8025
 
-### Staging (VPS) - TBD
-- Will be configured later
+### Staging & Production
+**NOT APPLICABLE** - This is a LOCAL-ONLY development project.
 
-### Production - TBD
-- Will be configured later
+The VPS staging site (`staging.jahongir-travel.uz`) is a **separate Laravel project** with different tech stack.
 
 ---
 
@@ -438,7 +455,8 @@ pnpm type-check             # TypeScript check
 
 ---
 
-**Last Updated:** 2025-12-18
+**Last Updated:** 2026-01-08
 **Project Repository:** /home/odil/projects/jahongir-travel-platform
 **Git Remote:** https://github.com/odilorg/jahongir-travel-platform.git
-**VPS Access:** TBD (not deployed yet)
+**Environment:** LOCAL-ONLY (Next.js + NestJS monorepo)
+**Note:** VPS staging site is a DIFFERENT project (Laravel) - do not confuse!

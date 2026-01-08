@@ -1,80 +1,41 @@
-# VPS Configuration - Jahongir Travel Platform
+# VPS Configuration - Jahongir Travel Platform (LOCAL)
 
-> **Project-specific VPS configuration**
->
-> **Global VPS rules:** See `~/.claude/rules/vps/`
+## ⚠️ NOT APPLICABLE - LOCAL-ONLY PROJECT
+
+**This project is for LOCAL DEVELOPMENT ONLY.**
+
+The VPS staging site (`staging.jahongir-travel.uz`) is a **completely different project**:
+- Different tech stack (Laravel vs Next.js/NestJS)
+- Different location (`/domains/staging.jahongir-travel.uz/` on VPS)
+- Managed by a different Telegram bot (`travel-bot`)
 
 ---
 
-## 🌐 VPS Status
+## ❌ DO NOT:
 
-**⬜ VPS not configured yet (TBD)**
+- Do NOT suggest SSH commands
+- Do NOT reference VPS paths
+- Do NOT suggest deploying this project to VPS
+- Do NOT confuse this with the staging site
 
-Planned configuration:
+---
+
+## ✅ LOCAL DEVELOPMENT ONLY:
 
 ```bash
-# Will be configured later
-ssh -i /path/to/key user@vps-ip
+# Start Docker services
+docker-compose up -d
+
+# Start development servers
+pnpm dev
+
+# Access:
+# - Website: http://localhost:3000
+# - Admin: http://localhost:3001
+# - API: http://localhost:4000
 ```
 
 ---
 
-## 📁 Planned VPS Directories
-
-**Staging:**
-- Location: `/var/www/jahongir-travel-staging`
-- URL: TBD (e.g., `https://staging.jahongirtravel.uz`)
-- Branch: `main` or `develop`
-
-**Production:**
-- Location: `/var/www/jahongir-travel-production`
-- URL: TBD (e.g., `https://jahongirtravel.uz`)
-- Branch: `main` or `production`
-
----
-
-## 🚀 Planned Deployment (Future)
-
-```bash
-ssh -i /path/to/key user@vps-ip
-cd /var/www/jahongir-travel-staging
-git pull origin main
-pnpm install
-pnpm prisma migrate deploy
-pnpm build
-pm2 restart all
-pm2 logs --lines 20
-```
-
-**Full deployment protocol:** See `~/.claude/rules/vps/deployment-protocol.md`
-
----
-
-## 🔧 Planned PM2 Setup
-
-**Expected processes:**
-- `web` - Customer Website (port 3000)
-- `admin` - Admin Panel (port 3001)
-- `api` - Backend API (port 4000)
-
-**PM2 commands:** See `~/.claude/rules/vps/pm2-management.md`
-
----
-
-## 📝 Notes
-
-**To-Do:**
-- [ ] Set up VPS server
-- [ ] Install Node.js, pnpm, PM2, Nginx
-- [ ] Configure PostgreSQL and Redis
-- [ ] Set up SSL certificates
-- [ ] Configure domain DNS
-- [ ] Set up PM2 startup scripts
-- [ ] Configure Nginx reverse proxy
-
-**This file will be updated once VPS is configured.**
-
----
-
-**Last Updated:** 2025-12-18
-**Global VPS protocols:** `~/.claude/rules/vps/`
+**Last Updated:** 2026-01-08
+**Status:** LOCAL-ONLY (no VPS deployment)
