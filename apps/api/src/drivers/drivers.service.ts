@@ -187,6 +187,12 @@ export class DriversService {
 
       // Add new vehicle assignment if vehicleId is not empty
       if (vehicleId && vehicleId !== '') {
+        // One vehicle can only belong to one driver at a time
+        // Remove any existing assignment for this vehicle
+        await this.prisma.driverVehicle.deleteMany({
+          where: { vehicleId },
+        });
+
         await this.prisma.driverVehicle.create({
           data: {
             driverId: id,

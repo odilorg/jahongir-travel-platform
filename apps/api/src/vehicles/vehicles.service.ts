@@ -30,6 +30,12 @@ export class VehiclesService {
       if (!driver) {
         throw new NotFoundException('Driver not found');
       }
+
+      // One vehicle can only belong to one driver at a time
+      // Remove any existing vehicle assignment for this driver
+      await this.prisma.driverVehicle.deleteMany({
+        where: { driverId },
+      });
     }
 
     // Check for duplicate plate number
@@ -251,13 +257,19 @@ export class VehiclesService {
 
     // Handle driver assignment update if driverId is provided
     if (driverId !== undefined) {
-      // Remove all existing driver assignments
+      // Remove all existing driver assignments for this vehicle
       await this.prisma.driverVehicle.deleteMany({
         where: { vehicleId: id },
       });
 
       // Add new driver assignment if driverId is not empty
       if (driverId && driverId !== '') {
+        // One vehicle can only belong to one driver at a time
+        // Remove any existing vehicle assignment for this driver
+        await this.prisma.driverVehicle.deleteMany({
+          where: { driverId },
+        });
+
         await this.prisma.driverVehicle.create({
           data: {
             vehicleId: id,
