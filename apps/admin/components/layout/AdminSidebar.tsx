@@ -17,6 +17,8 @@ import {
   MapPin,
   Car,
   Truck,
+  Building2,
+  ScrollText,
 } from 'lucide-react';
 import { AdminNavItem } from './AdminNavItem';
 import { cn } from '@/lib/utils';
@@ -52,6 +54,13 @@ const navigationItems = [
       { href: '/guides', icon: MapPin, label: 'Guides' },
       { href: '/drivers', icon: Car, label: 'Drivers' },
       { href: '/vehicles', icon: Truck, label: 'Vehicles' },
+    ],
+  },
+  {
+    section: 'Suppliers',
+    items: [
+      { href: '/supplier-companies', icon: Building2, label: 'Companies' },
+      { href: '/contracts', icon: ScrollText, label: 'Contracts' },
     ],
   },
   {
