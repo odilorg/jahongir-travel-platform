@@ -142,7 +142,7 @@ export default function EditTourPage() {
       const slug = tour?.slug;
 
       // Call the web app's revalidation API
-      const webAppUrl = process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3000';
+      const webAppUrl = process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3001';
       const revalidateSecret = process.env.NEXT_PUBLIC_REVALIDATE_SECRET || 'jahongir-travel-revalidate-2024';
 
       const response = await fetch(`${webAppUrl}/api/revalidate`, {

@@ -242,7 +242,7 @@ export default function BlogPage() {
                           size="sm"
                           asChild
                         >
-                          <a href={`https://dev.jahongir-travel.uz/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">
+                          <a href={`${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3001'}/en/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">
                             <Eye className="h-4 w-4 mr-1" />
                             View
                           </a>

@@ -314,7 +314,7 @@ export default function ToursPage() {
                     asChild
                   >
                     <a
-                      href={`${process.env.NEXT_PUBLIC_WEB_URL || 'http://62.72.22.205:3010'}/en/tours/${tour.slug}`}
+                      href={`${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3001'}/en/tours/${tour.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

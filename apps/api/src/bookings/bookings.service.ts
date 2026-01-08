@@ -67,6 +67,36 @@ export class BookingsService {
       throw new BadRequestException('Travel date must be in the future');
     }
 
+    // Check for duplicate bookings (prevent double-submission)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const startOfDay = new Date(travelDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(travelDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const recentDuplicate = await this.prisma.booking.findFirst({
+      where: {
+        tourId: createBookingDto.tourId,
+        customerEmail: createBookingDto.customerEmail.toLowerCase(),
+        travelDate: {
+          // Same day (ignore time)
+          gte: startOfDay,
+          lt: endOfDay,
+        },
+        createdAt: { gte: fiveMinutesAgo },
+        status: { not: 'cancelled' },
+      },
+    });
+
+    if (recentDuplicate) {
+      this.logger.warn(
+        `Duplicate booking detected: ${createBookingDto.customerEmail} attempted to book tour ${createBookingDto.tourId} again`,
+      );
+      throw new BadRequestException(
+        'A similar booking was created recently. Please check your existing bookings or contact support.',
+      );
+    }
+
     // Calculate total price
     const totalPrice = new Decimal(tour.price.toString()).mul(
       createBookingDto.numberOfPeople,
@@ -288,10 +318,29 @@ export class BookingsService {
   async update(id: string, updateDto: UpdateBookingDto) {
     const booking = await this.prisma.booking.findUnique({
       where: { id },
+      include: {
+        tour: {
+          select: {
+            id: true,
+            price: true,
+          },
+        },
+      },
     });
 
     if (!booking) {
       throw new NotFoundException('Booking not found');
+    }
+
+    // Recalculate total price if number of people changed
+    let totalPrice = booking.totalPrice;
+    if (updateDto.numberOfPeople && updateDto.numberOfPeople !== booking.numberOfPeople) {
+      totalPrice = new Decimal(booking.tour.price.toString()).mul(
+        updateDto.numberOfPeople,
+      );
+      this.logger.log(
+        `Booking ${id} price recalculated: ${booking.numberOfPeople} → ${updateDto.numberOfPeople} people, $${booking.totalPrice} → $${totalPrice}`,
+      );
     }
 
     const updated = await this.prisma.booking.update({
@@ -299,6 +348,7 @@ export class BookingsService {
       data: {
         ...(updateDto.travelDate && { travelDate: new Date(updateDto.travelDate) }),
         ...(updateDto.numberOfPeople && { numberOfPeople: updateDto.numberOfPeople }),
+        ...(updateDto.numberOfPeople && { totalPrice }), // Update price when people count changes
         ...(updateDto.specialRequests !== undefined && { specialRequests: updateDto.specialRequests }),
       },
       include: {
