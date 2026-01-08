@@ -835,7 +835,6 @@ async function main() {
 
   const vehicle1 = await prisma.vehicle.create({
     data: {
-      driverId: driver1.id,
       plateNumber: '01-A-123-ABC',
       make: 'Toyota',
       model: 'Hiace',
@@ -844,6 +843,12 @@ async function main() {
       capacity: 12,
       type: 'minivan',
       isActive: true,
+      drivers: {
+        create: {
+          driverId: driver1.id,
+          isPrimary: true,
+        },
+      },
     },
   });
 
@@ -860,7 +865,6 @@ async function main() {
 
   const vehicle2 = await prisma.vehicle.create({
     data: {
-      driverId: driver2.id,
       plateNumber: '01-B-456-DEF',
       make: 'Mercedes-Benz',
       model: 'Sprinter',
@@ -869,6 +873,12 @@ async function main() {
       capacity: 15,
       type: 'van',
       isActive: true,
+      drivers: {
+        create: {
+          driverId: driver2.id,
+          isPrimary: true,
+        },
+      },
     },
   });
 
@@ -885,7 +895,6 @@ async function main() {
 
   const vehicle3 = await prisma.vehicle.create({
     data: {
-      driverId: driver3.id,
       plateNumber: '01-C-789-GHI',
       make: 'Toyota',
       model: 'Land Cruiser',
@@ -894,6 +903,12 @@ async function main() {
       capacity: 7,
       type: 'suv',
       isActive: true,
+      drivers: {
+        create: {
+          driverId: driver3.id,
+          isPrimary: true,
+        },
+      },
     },
   });
 

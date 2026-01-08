@@ -619,14 +619,20 @@ export class BookingsService {
     if (vehicleId) {
       const vehicle = await this.prisma.vehicle.findUnique({
         where: { id: vehicleId },
+        include: {
+          drivers: {
+            where: { driverId },
+          },
+        },
       });
 
       if (!vehicle) {
         throw new NotFoundException('Vehicle not found');
       }
 
-      if (vehicle.driverId !== driverId) {
-        throw new BadRequestException('Vehicle does not belong to this driver');
+      // Check if vehicle is assigned to this driver (many-to-many via DriverVehicle)
+      if (vehicle.drivers.length === 0) {
+        throw new BadRequestException('Vehicle is not assigned to this driver');
       }
     }
 
@@ -713,15 +719,19 @@ export class BookingsService {
             driver: {
               include: {
                 vehicles: {
-                  where: { isActive: true },
-                  select: {
-                    id: true,
-                    plateNumber: true,
-                    make: true,
-                    model: true,
-                    color: true,
-                    capacity: true,
-                    type: true,
+                  include: {
+                    vehicle: {
+                      select: {
+                        id: true,
+                        plateNumber: true,
+                        make: true,
+                        model: true,
+                        color: true,
+                        capacity: true,
+                        type: true,
+                        isActive: true,
+                      },
+                    },
                   },
                 },
               },

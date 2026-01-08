@@ -18,13 +18,18 @@ export class VehiclesService {
    * Create a new vehicle
    */
   async create(createVehicleDto: CreateVehicleDto) {
-    // Verify driver exists
-    const driver = await this.prisma.driver.findUnique({
-      where: { id: createVehicleDto.driverId },
-    });
+    const { driverId, ...vehicleData } = createVehicleDto;
 
-    if (!driver) {
-      throw new NotFoundException('Driver not found');
+    // Verify driver exists if provided
+    let driver = null;
+    if (driverId) {
+      driver = await this.prisma.driver.findUnique({
+        where: { id: driverId },
+      });
+
+      if (!driver) {
+        throw new NotFoundException('Driver not found');
+      }
     }
 
     // Check for duplicate plate number
@@ -36,30 +41,43 @@ export class VehiclesService {
       throw new ConflictException('Vehicle with this plate number already exists');
     }
 
+    // Create vehicle and optionally assign to driver
     const vehicle = await this.prisma.vehicle.create({
       data: {
-        driverId: createVehicleDto.driverId,
-        plateNumber: createVehicleDto.plateNumber,
-        make: createVehicleDto.make,
-        model: createVehicleDto.model,
-        year: createVehicleDto.year,
-        color: createVehicleDto.color,
-        capacity: createVehicleDto.capacity,
-        type: createVehicleDto.type || 'sedan',
-        notes: createVehicleDto.notes,
+        plateNumber: vehicleData.plateNumber,
+        make: vehicleData.make,
+        model: vehicleData.model,
+        year: vehicleData.year,
+        color: vehicleData.color,
+        capacity: vehicleData.capacity,
+        type: vehicleData.type || 'sedan',
+        notes: vehicleData.notes,
+        // Create driver assignment if driverId provided
+        ...(driverId && {
+          drivers: {
+            create: {
+              driverId,
+              isPrimary: true,
+            },
+          },
+        }),
       },
       include: {
-        driver: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        drivers: {
+          include: {
+            driver: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
     });
 
-    this.logger.log(`Vehicle created: ${vehicle.plateNumber} for driver ${driver.name}`);
+    this.logger.log(`Vehicle created: ${vehicle.plateNumber}${driver ? ` for driver ${driver.name}` : ''}`);
 
     return vehicle;
   }
@@ -77,7 +95,8 @@ export class VehiclesService {
     const { driverId, type, isActive, page = 1, limit = 50 } = options || {};
 
     const where: any = {};
-    if (driverId) where.driverId = driverId;
+    // Filter by driver through junction table
+    if (driverId) where.drivers = { some: { driverId } };
     if (type) where.type = type;
     if (isActive !== undefined) where.isActive = isActive;
 
@@ -85,16 +104,21 @@ export class VehiclesService {
       this.prisma.vehicle.findMany({
         where,
         include: {
-          driver: {
-            select: {
-              id: true,
-              name: true,
-              phone: true,
-              isActive: true,
+          drivers: {
+            include: {
+              driver: {
+                select: {
+                  id: true,
+                  name: true,
+                  phone: true,
+                  isActive: true,
+                },
+              },
             },
+            orderBy: { isPrimary: 'desc' },
           },
         },
-        orderBy: [{ driver: { name: 'asc' } }, { make: 'asc' }, { model: 'asc' }],
+        orderBy: [{ make: 'asc' }, { model: 'asc' }],
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -125,7 +149,16 @@ export class VehiclesService {
     }
 
     const vehicles = await this.prisma.vehicle.findMany({
-      where: { driverId, isActive: true },
+      where: {
+        drivers: { some: { driverId } },
+        isActive: true,
+      },
+      include: {
+        drivers: {
+          where: { driverId },
+          select: { isPrimary: true },
+        },
+      },
       orderBy: { make: 'asc' },
     });
 
@@ -139,14 +172,19 @@ export class VehiclesService {
     const vehicle = await this.prisma.vehicle.findUnique({
       where: { id },
       include: {
-        driver: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
-            licenseNumber: true,
-            isActive: true,
+        drivers: {
+          include: {
+            driver: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+                licenseNumber: true,
+                isActive: true,
+              },
+            },
           },
+          orderBy: { isPrimary: 'desc' },
         },
         bookings: {
           include: {
@@ -208,16 +246,24 @@ export class VehiclesService {
       }
     }
 
+    // Remove driverId from update data (handled separately via DriverVehicle)
+    const { driverId, ...vehicleData } = updateVehicleDto as any;
+
     const updated = await this.prisma.vehicle.update({
       where: { id },
-      data: updateVehicleDto,
+      data: vehicleData,
       include: {
-        driver: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        drivers: {
+          include: {
+            driver: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
+          orderBy: { isPrimary: 'desc' },
         },
       },
     });

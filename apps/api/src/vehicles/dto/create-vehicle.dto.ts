@@ -1,8 +1,9 @@
 import { IsString, IsInt, IsOptional, Min, Max, IsIn } from 'class-validator';
 
 export class CreateVehicleDto {
+  @IsOptional()
   @IsString({ message: 'Driver ID must be a string' })
-  driverId: string;
+  driverId?: string;  // Optional - vehicles can exist without a driver
 
   @IsString({ message: 'Plate number must be a string' })
   plateNumber: string;
