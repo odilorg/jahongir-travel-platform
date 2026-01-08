@@ -8,6 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Car,
   Phone,
   Languages,
@@ -26,16 +33,32 @@ import {
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
+interface Vehicle {
+  id: string;
+  plateNumber: string;
+  make: string;
+  model: string;
+  type: string;
+}
+
+interface DriverVehicle {
+  id: string;
+  vehicleId: string;
+  driverId: string;
+  isPrimary: boolean;
+  vehicle: Vehicle;
+}
+
 interface Driver {
   id: string;
   name: string;
   phone?: string;
   licenseNumber?: string;
-  vehicleInfo?: string;
   languages: string[];
   notes?: string;
   isActive: boolean;
   createdAt: string;
+  vehicles?: DriverVehicle[];
   _count?: {
     bookings: number;
   };
@@ -76,7 +99,6 @@ interface Stats {
   topDrivers: Array<{
     id: string;
     name: string;
-    vehicleInfo?: string;
     assignmentCount: number;
   }>;
 }
@@ -91,6 +113,7 @@ const LANGUAGES = [
 
 export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -104,7 +127,7 @@ export default function DriversPage() {
     name: '',
     phone: '',
     licenseNumber: '',
-    vehicleInfo: '',
+    vehicleId: '',
     languages: [] as string[],
     notes: '',
   });
@@ -113,6 +136,7 @@ export default function DriversPage() {
   useEffect(() => {
     fetchDrivers();
     fetchStats();
+    fetchVehicles();
   }, [page]);
 
   useEffect(() => {
@@ -150,6 +174,15 @@ export default function DriversPage() {
     }
   };
 
+  const fetchVehicles = async () => {
+    try {
+      const response = await api.get<{ data: Vehicle[] }>('/vehicles?limit=100');
+      setVehicles(response.data);
+    } catch (error: any) {
+      console.error('Vehicles fetch error:', error);
+    }
+  };
+
   const viewDriverDetails = async (driverId: string) => {
     setLoadingDriver(true);
     try {
@@ -164,7 +197,7 @@ export default function DriversPage() {
 
   const openCreateForm = () => {
     setEditingDriver(null);
-    setFormData({ name: '', phone: '', licenseNumber: '', vehicleInfo: '', languages: [], notes: '' });
+    setFormData({ name: '', phone: '', licenseNumber: '', vehicleId: '', languages: [], notes: '' });
     setShowForm(true);
   };
 
@@ -174,7 +207,7 @@ export default function DriversPage() {
       name: driver.name,
       phone: driver.phone || '',
       licenseNumber: driver.licenseNumber || '',
-      vehicleInfo: driver.vehicleInfo || '',
+      vehicleId: driver.vehicles?.[0]?.vehicleId || '',
       languages: driver.languages || [],
       notes: driver.notes || '',
     });
@@ -256,10 +289,10 @@ export default function DriversPage() {
                   <span>{driver.phone}</span>
                 </div>
               )}
-              {driver.vehicleInfo && (
+              {driver.vehicles && driver.vehicles.length > 0 && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Car className="h-4 w-4" />
-                  <span>{driver.vehicleInfo}</span>
+                  <span>{driver.vehicles[0].vehicle.make} {driver.vehicles[0].vehicle.model} ({driver.vehicles[0].vehicle.plateNumber})</span>
                 </div>
               )}
               {driver.licenseNumber && (
@@ -497,13 +530,23 @@ export default function DriversPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="vehicleInfo">Vehicle Info</Label>
-                  <Input
-                    id="vehicleInfo"
-                    value={formData.vehicleInfo}
-                    onChange={(e) => setFormData({ ...formData, vehicleInfo: e.target.value })}
-                    placeholder="e.g., Toyota Hiace 2020, White, 01A123BC"
-                  />
+                  <Label htmlFor="vehicleId">Assigned Vehicle</Label>
+                  <Select
+                    value={formData.vehicleId || 'none'}
+                    onValueChange={(value) => setFormData({ ...formData, vehicleId: value === 'none' ? '' : value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select vehicle (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No vehicle assigned</SelectItem>
+                      {vehicles.map((vehicle) => (
+                        <SelectItem key={vehicle.id} value={vehicle.id}>
+                          {vehicle.make} {vehicle.model} ({vehicle.plateNumber})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
@@ -558,7 +601,11 @@ export default function DriversPage() {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold">{selectedDriver.name}</h2>
-                    {selectedDriver.vehicleInfo && <p className="text-muted-foreground">{selectedDriver.vehicleInfo}</p>}
+                    {selectedDriver.vehicles && selectedDriver.vehicles.length > 0 && (
+                      <p className="text-muted-foreground">
+                        {selectedDriver.vehicles[0].vehicle.make} {selectedDriver.vehicles[0].vehicle.model} ({selectedDriver.vehicles[0].vehicle.plateNumber})
+                      </p>
+                    )}
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setSelectedDriver(null)}>
@@ -594,6 +641,12 @@ export default function DriversPage() {
                   <div className="flex items-center gap-2 text-sm">
                     <CreditCard className="h-4 w-4 text-muted-foreground" />
                     <span>License: {selectedDriver.licenseNumber}</span>
+                  </div>
+                )}
+                {selectedDriver.vehicles && selectedDriver.vehicles.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Car className="h-4 w-4 text-muted-foreground" />
+                    <span>Vehicle: {selectedDriver.vehicles[0].vehicle.make} {selectedDriver.vehicles[0].vehicle.model} ({selectedDriver.vehicles[0].vehicle.plateNumber})</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-sm">

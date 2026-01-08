@@ -71,6 +71,20 @@ export class DriversService {
         skip: (page - 1) * limit,
         take: limit,
         include: {
+          vehicles: {
+            include: {
+              vehicle: {
+                select: {
+                  id: true,
+                  plateNumber: true,
+                  make: true,
+                  model: true,
+                  type: true,
+                },
+              },
+            },
+            orderBy: { isPrimary: 'desc' },
+          },
           _count: {
             select: { bookings: true },
           },
@@ -99,6 +113,20 @@ export class DriversService {
     const driver = await this.prisma.driver.findUnique({
       where: { id },
       include: {
+        vehicles: {
+          include: {
+            vehicle: {
+              select: {
+                id: true,
+                plateNumber: true,
+                make: true,
+                model: true,
+                type: true,
+              },
+            },
+          },
+          orderBy: { isPrimary: 'desc' },
+        },
         bookings: {
           include: {
             booking: {
@@ -147,15 +175,53 @@ export class DriversService {
       throw new NotFoundException('Driver not found');
     }
 
+    // Extract vehicleId for separate handling
+    const { vehicleId, ...driverData } = updateDriverDto;
+
+    // Handle vehicle assignment update if vehicleId is provided
+    if (vehicleId !== undefined) {
+      // Remove all existing vehicle assignments for this driver
+      await this.prisma.driverVehicle.deleteMany({
+        where: { driverId: id },
+      });
+
+      // Add new vehicle assignment if vehicleId is not empty
+      if (vehicleId && vehicleId !== '') {
+        await this.prisma.driverVehicle.create({
+          data: {
+            driverId: id,
+            vehicleId,
+            isPrimary: true,
+          },
+        });
+      }
+    }
+
     const updated = await this.prisma.driver.update({
       where: { id },
       data: {
-        ...(updateDriverDto.name && { name: updateDriverDto.name }),
-        ...(updateDriverDto.phone !== undefined && { phone: updateDriverDto.phone }),
-        ...(updateDriverDto.licenseNumber !== undefined && { licenseNumber: updateDriverDto.licenseNumber }),
-        ...(updateDriverDto.languages && { languages: updateDriverDto.languages }),
-        ...(updateDriverDto.notes !== undefined && { notes: updateDriverDto.notes }),
-        ...(updateDriverDto.isActive !== undefined && { isActive: updateDriverDto.isActive }),
+        ...(driverData.name && { name: driverData.name }),
+        ...(driverData.phone !== undefined && { phone: driverData.phone }),
+        ...(driverData.licenseNumber !== undefined && { licenseNumber: driverData.licenseNumber }),
+        ...(driverData.languages && { languages: driverData.languages }),
+        ...(driverData.notes !== undefined && { notes: driverData.notes }),
+        ...(driverData.isActive !== undefined && { isActive: driverData.isActive }),
+      },
+      include: {
+        vehicles: {
+          include: {
+            vehicle: {
+              select: {
+                id: true,
+                plateNumber: true,
+                make: true,
+                model: true,
+                type: true,
+              },
+            },
+          },
+          orderBy: { isPrimary: 'desc' },
+        },
       },
     });
 
