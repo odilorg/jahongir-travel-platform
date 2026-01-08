@@ -22,15 +22,26 @@ export class CategoriesService {
 
   async create(createCategoryDto: CreateCategoryDto) {
     try {
+      const { name, slug, description, ...categoryData } = createCategoryDto;
+
       const category = await this.prisma.tourCategory.create({
-        data: createCategoryDto,
+        data: {
+          ...categoryData,
+          translations: {
+            create: {
+              locale: DEFAULT_LOCALE,
+              name,
+              slug,
+              description,
+            },
+          },
+        },
         include: {
           translations: true,
         },
       });
 
-      const firstTranslation = category.translations[0];
-      this.logger.log(`Created category: ${firstTranslation?.name || category.id} (${category.id})`);
+      this.logger.log(`Created category: ${name} (${category.id})`);
       return category;
     } catch (error) {
       if (error.code === 'P2002') {
@@ -191,9 +202,35 @@ export class CategoriesService {
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
     try {
+      const { name, slug, description, ...categoryData } = updateCategoryDto;
+
+      // Update category and upsert translation
       const category = await this.prisma.tourCategory.update({
         where: { id },
-        data: updateCategoryDto,
+        data: {
+          ...categoryData,
+          translations: name || slug || description ? {
+            upsert: {
+              where: {
+                categoryId_locale: {
+                  categoryId: id,
+                  locale: DEFAULT_LOCALE,
+                },
+              },
+              create: {
+                locale: DEFAULT_LOCALE,
+                name: name || '',
+                slug: slug || '',
+                description,
+              },
+              update: {
+                ...(name && { name }),
+                ...(slug && { slug }),
+                ...(description !== undefined && { description }),
+              },
+            },
+          } : undefined,
+        },
         include: {
           translations: true,
         },
